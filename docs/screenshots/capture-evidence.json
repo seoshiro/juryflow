@@ -1,0 +1,13 @@
+{
+  "source": "http://127.0.0.1:4173/",
+  "capturedAt": "2026-10-23T16:40:56.705Z",
+  "teamCount": 12,
+  "changedTeams": [
+    "Second Bloom",
+    "Fieldwork",
+    "Common Ground",
+    "Northstar"
+  ],
+  "unchangedCount": 8,
+  "browserErrors": []
+}
