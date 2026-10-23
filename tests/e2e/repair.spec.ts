@@ -8,6 +8,7 @@ declare global {
     releaseAuditImport?: () => void;
     auditImportWaiting?: boolean;
     auditImportFinished?: boolean;
+    auditWorkerTerminations?: number;
   }
 }
 
@@ -170,6 +171,42 @@ for (const action of ['newer import', 'reset', 'edit'] as const) {
     expect((await stored(page)).project.name).toBe(expected);
   });
 }
+
+test('ALG-01: a newer file import supersedes an older in-flight worker', async ({ page }, testInfo) => {
+  await page.evaluate(() => {
+    const OriginalWorker = window.Worker;
+    window.auditWorkerTerminations = 0;
+    window.Worker = class extends OriginalWorker {
+      terminate() { window.auditWorkerTerminations = (window.auditWorkerTerminations ?? 0) + 1; super.terminate(); }
+    };
+    const original = File.prototype.text;
+    File.prototype.text = async function () {
+      const value = await original.call(this);
+      if (this.name === 'slow-a.json') await new Promise<void>(resolve => { window.releaseAuditImport = resolve; window.auditImportWaiting = true; });
+      return value;
+    };
+  });
+  let releaseWorker!: () => void;
+  let workerRequestStarted!: () => void;
+  const gate = new Promise<void>(resolve => { releaseWorker = resolve; });
+  const requested = new Promise<void>(resolve => { workerRequestStarted = resolve; });
+  await page.route('**/assets/scheduler.worker-*.js', async route => { workerRequestStarted(); await gate; await route.continue(); });
+  await page.getByRole('button', { name: generation }).click();
+  await requested;
+  await expect(page.getByRole('button', { name: /Cancel search/ })).toBeVisible();
+  const newer = await stored(page); newer.project.name = 'Newer file supersedes old solver';
+  await importJSON(page, newer, 'slow-a.json');
+  await page.waitForFunction(() => window.auditImportWaiting === true);
+  releaseWorker();
+  await page.waitForFunction(() => (window.auditWorkerTerminations ?? 0) > 0);
+  await waitForPaint(page);
+  const beforeFileResolution = await stored(page);
+  await page.evaluate(() => window.releaseAuditImport?.());
+  await waitForPaint(page);
+  const afterFileResolution = await stored(page);
+  await writeFile(testInfo.outputPath('worker-import-ordering.json'), JSON.stringify({ previousWorkerScheduleCount: beforeFileResolution.schedule.length, expectedNewName: newer.project.name, actualNewName: afterFileResolution.project.name }, null, 2));
+  expect(afterFileResolution.project.name).toBe(newer.project.name);
+});
 
 for (const close of ['Escape', 'Done', 'Close details'] as const) {
   test(`UI-02: ${close} restores the schedule dialog opener`, async ({ page }) => {

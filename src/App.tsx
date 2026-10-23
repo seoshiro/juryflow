@@ -264,6 +264,9 @@ export default function App() {
       );
       return;
     }
+    // A file selected now supersedes any older solver before its asynchronous read.
+    // Otherwise that solver can change the document and invalidate this import.
+    if (busy) cancel();
     try {
       const source = await file.text();
       if (operation !== importSequence.current) return;
@@ -283,7 +286,6 @@ export default function App() {
       )
         return;
       if (operation !== importSequence.current) return;
-      cancel();
       if (!replaceDocument(parsed.value)) return;
       setFileError("");
       setNotice(

@@ -30,21 +30,30 @@ worker request. Native quota uses actual Storage, not a mocked exception.
 
 ## Regression gate
 
-Final frozen local candidate: **25/25 Chromium E2E passed in 54.0 seconds**
-(the original 10 scenarios plus 15 new audit regressions). The actual production
-bundle tested was `index-yuNFHAQz.js`; implementation source was unchanged during
-this independent run. Stronger direct visible/name assertions subsequently
-passed in the targeted UI-04 rerun. Additional recovery and Russian-dialog axe
-checks then passed with **zero violations** for `wcag2a`, `wcag2aa`, `wcag21aa`.
-Recovery/native-quota targeted rerun: 1/1 in 23.5 s; Russian dialog/name-state
-targeted rerun: 1/1 in 6.2 s. Live verification remains a separate release gate.
+Final frozen local candidate: **26/26 Chromium E2E passed in 53.1 seconds**
+(the original 10 scenarios plus 16 new audit regressions). The actual production
+bundle tested was `index-CmanZzAQ.js`; implementation source was unchanged during
+this independent run. Recovery and Russian-dialog axe checks are included in
+that full pass with **zero violations** for `wcag2a`, `wcag2aa`, `wcag21aa`.
+Direct visible/name assertions cover EN regenerate and RU regenerate, outage,
+dialog and replan states. Live verification remains a separate release gate.
+
+Earlier integrated candidate `index-yuNFHAQz.js` passed the initial 25 tests in
+54.0 s. A further integration ordering check then exposed a related ALG-01
+variant: an older worker could finish during a newer gated file read, causing
+the newer import to be silently ignored. That new regression failed against
+the first candidate (expected the new file, actual demo). The repair cancels
+an older worker at the start of a supported import, before awaiting file text.
+The final full 26-test pass includes this regression: the old worker produces
+no schedule and the newer file is applied. This is recorded separately from
+the original nine baseline findings rather than hidden by the earlier pass.
 
 | Issue | Repaired candidate observation |
 | --- | --- |
 | UI-01 | Real sequential typing preserves 20, blur/Enter commit correctly, invalid 121 does not replace the saved value, and a later valid value survives reload. Slot-count editing also stays buffered. |
 | SEC-01 | Exact original 522,631-byte file is accepted with unknown metadata removed; canonical export is importable and reload preserves the event. UTF-8 byte overflow rejects before replacing current data. |
 | SEC-02 | Real native quota still raises `QuotaExceededError`; the same 5,723-character corrupt raw remains unchanged through reload and ordinary edits, downloads exactly, and requires confirmation before replacement. Canceling replacement preserves it; accepting a valid replacement persists. |
-| ALG-01 | Gated older file A cannot overwrite newer B, Reset, or a document edit after its read completes. Each result also survives reload. |
+| ALG-01 | Gated older file A cannot overwrite newer B, Reset, or a document edit after its read completes. Each result also survives reload. Conversely, an older in-flight worker cannot invalidate a newer file import. |
 | UI-02 | Escape, Done and X return focus to the original schedule card; editor opener restoration and a removed-card fallback to main workspace pass. |
 | ALG-02 | Original valid comma-ID fixture now shows one changed card and a before/after change row with the actual old/new judges. |
 | UI-04 | Visible EN/RU regenerate/outage/replan commands agree with accessible names; Russian dialog helper/control text and team-name label are translated. |
