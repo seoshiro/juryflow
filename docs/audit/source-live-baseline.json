@@ -1,0 +1,68 @@
+{
+  "repo": "juryflow",
+  "commit": "4d85745484ce96c35d523ae6f08b81b7f26c6205",
+  "sourceStatus": "",
+  "files": [
+    {
+      "path": "assets/index-CmanZzAQ.js",
+      "bytes": 285390,
+      "gzipBytes": 87631,
+      "sha256": "94906fb7dff8723005395a0f819fb80195ebef8e3825bb19e49574c33a13bd4c",
+      "remoteStatus": 200,
+      "remoteBytes": 285390,
+      "remoteSHA256": "94906fb7dff8723005395a0f819fb80195ebef8e3825bb19e49574c33a13bd4c",
+      "match": true
+    },
+    {
+      "path": "assets/index-pUQjmHHy.css",
+      "bytes": 42633,
+      "gzipBytes": 9343,
+      "sha256": "c423e29c7f35b6219bf0e049ebaf3097a9b865a54b59a668daf7d8adba173f15",
+      "remoteStatus": 200,
+      "remoteBytes": 42633,
+      "remoteSHA256": "c423e29c7f35b6219bf0e049ebaf3097a9b865a54b59a668daf7d8adba173f15",
+      "match": true
+    },
+    {
+      "path": "assets/scheduler.worker-DPDZmSxc.js",
+      "bytes": 10973,
+      "gzipBytes": 3974,
+      "sha256": "f1ab8563c1e9a53caf6ccdb8063f3006eb1ae6e9a1883b042de8cb42b4dca6b7",
+      "remoteStatus": 200,
+      "remoteBytes": 10973,
+      "remoteSHA256": "f1ab8563c1e9a53caf6ccdb8063f3006eb1ae6e9a1883b042de8cb42b4dca6b7",
+      "match": true
+    },
+    {
+      "path": "build.json",
+      "bytes": 88,
+      "gzipBytes": 103,
+      "sha256": "6861825c5d15bbe96d6fb2f911e2c27d46fcc87bb801e4993c2ae52fb7ebc381",
+      "remoteStatus": 200,
+      "remoteBytes": 88,
+      "remoteSHA256": "6861825c5d15bbe96d6fb2f911e2c27d46fcc87bb801e4993c2ae52fb7ebc381",
+      "match": true
+    },
+    {
+      "path": "favicon.svg",
+      "bytes": 177,
+      "gzipBytes": 163,
+      "sha256": "500c7801d577e281d77f9537af5086755ca0d49997f3cac5901f4b222dadb176",
+      "remoteStatus": 200,
+      "remoteBytes": 177,
+      "remoteSHA256": "500c7801d577e281d77f9537af5086755ca0d49997f3cac5901f4b222dadb176",
+      "match": true
+    },
+    {
+      "path": "index.html",
+      "bytes": 668,
+      "gzipBytes": 436,
+      "sha256": "74774bd2dfc4f626c370d9628bf34a130911e2632dd0b17c42000669d73ef11e",
+      "remoteStatus": 200,
+      "remoteBytes": 668,
+      "remoteSHA256": "74774bd2dfc4f626c370d9628bf34a130911e2632dd0b17c42000669d73ef11e",
+      "match": true
+    }
+  ],
+  "allMatched": true
+}

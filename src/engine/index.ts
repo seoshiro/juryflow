@@ -11,6 +11,15 @@ const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
 const unique = <T,>(values: T[]) => new Set(values).size === values.length;
 const issue = (code: string, message: string, teamIds?: string[]): Issue => ({ code, message, ...(teamIds ? { teamIds } : {}) });
 
+function dataArray(value: unknown, max: number): value is unknown[] {
+  if (!Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype || value.length > max || Reflect.ownKeys(value).length !== value.length + 1) return false;
+  for (let index = 0; index < value.length; index++) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+    if (!descriptor || !('value' in descriptor) || !descriptor.enumerable) return false;
+  }
+  return true;
+}
+
 /** Validate structural input and locked assignments before any search. Limits bound browser work. */
 export function validateProject(project: Project): Issue[] {
   const p: unknown = project;
@@ -22,12 +31,12 @@ export function validateProject(project: Project): Issue[] {
   if (!integer(p.slotMinutes) || p.slotMinutes < 5 || p.slotMinutes > 120) issues.push(issue('invalid-duration', 'Slot duration must be between 5 and 120 whole minutes.'));
   if (!integer(p.slotCount) || p.slotCount < 1 || p.slotCount > LIMITS.slots) issues.push(issue('invalid-slots', `Use between 1 and ${LIMITS.slots} slots.`));
   for (const [key, max] of [['teams', LIMITS.teams], ['judges', LIMITS.judges], ['rooms', LIMITS.rooms], ['locks', LIMITS.teams]] as const) {
-    if (!Array.isArray(p[key]) || p[key].length > max) issues.push(issue('invalid-project', `${key} must be an array with at most ${max} entries.`));
+    if (!dataArray(p[key], max)) issues.push(issue('invalid-project', `${key} must be a dense data array with at most ${max} entries.`));
   }
   if (issues.length) return issues;
   const slotCount = project.slotCount;
-  const availability = (value: unknown) => Array.isArray(value) && value.length <= slotCount && unique(value) && value.every(slot => integer(slot) && slot >= 0 && slot < slotCount);
-  const idList = (value: unknown) => Array.isArray(value) && value.length <= LIMITS.judges && unique(value) && value.every(text);
+  const availability = (value: unknown) => dataArray(value, slotCount) && unique(value) && value.every(slot => integer(slot) && slot >= 0 && slot < slotCount);
+  const idList = (value: unknown) => dataArray(value, LIMITS.judges) && unique(value) && value.every(text);
   for (const key of ['teams', 'judges', 'rooms'] as const) {
     const values = project[key] as unknown[];
     const ids = new Set<string>();
@@ -56,7 +65,7 @@ export function validateProject(project: Project): Issue[] {
 
 function assignmentIssues(project: Project, assignments: Assignment[], complete: boolean, enforceLocks: boolean): Issue[] {
   const issues: Issue[] = [];
-  if (!Array.isArray(assignments) || assignments.length > LIMITS.teams) return [issue('invalid-assignments', `Assignments must be an array with at most ${LIMITS.teams} entries.`)];
+  if (!dataArray(assignments, LIMITS.teams)) return [issue('invalid-assignments', `Assignments must be a dense data array with at most ${LIMITS.teams} entries.`)];
   const teams = new Map(project.teams.map(team => [team.id, team]));
   const judges = new Map(project.judges.map(judge => [judge.id, judge]));
   const rooms = new Map(project.rooms.map(room => [room.id, room]));
@@ -65,7 +74,7 @@ function assignmentIssues(project: Project, assignments: Assignment[], complete:
   const judgeUse = new Map<string, string>();
   for (const candidate of assignments) {
     const value: unknown = candidate;
-    if (!record(value) || !text(value.teamId) || !text(value.roomId) || !integer(value.slot) || !Array.isArray(value.judgeIds) || value.judgeIds.length > LIMITS.judges || !value.judgeIds.every(text)) { issues.push(issue('invalid-assignment', 'Each assignment needs a team, slot, room and judge IDs.')); continue; }
+    if (!record(value) || !text(value.teamId) || !text(value.roomId) || !integer(value.slot) || !dataArray(value.judgeIds, LIMITS.judges) || !value.judgeIds.every(text)) { issues.push(issue('invalid-assignment', 'Each assignment needs a team, slot, room and judge IDs.')); continue; }
     const a = candidate;
     const team = teams.get(a.teamId);
     const room = rooms.get(a.roomId);

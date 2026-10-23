@@ -1,0 +1,11 @@
+{
+  "seed": 99222801,
+  "result": {
+    "cases": 450,
+    "feasible": 163,
+    "infeasible": 287,
+    "preferences": 225,
+    "locked": 19,
+    "checks": "independent exhaustive SAT/UNSAT and minimum disruption, cancellation, zero budgets, input immutability"
+  }
+}

@@ -7,7 +7,7 @@ function assertDocumentSize(source: string): void {
   if (source.length > MAX_DOCUMENT_BYTES || documentBytes(source) > MAX_DOCUMENT_BYTES) throw new Error(`Document exceeds the ${MAX_DOCUMENT_BYTES.toLocaleString('en-US')}-byte UTF-8 limit (2 MB).`);
 }
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
-const clean = (v: string) => !Array.from(v).some(c => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127);
+const clean = (v: string) => !Array.from(v).some(c => c.charCodeAt(0) < 32 || (c.charCodeAt(0) >= 127 && c.charCodeAt(0) <= 159));
 const text = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0 && v.length <= 160 && clean(v);
 const integer = (v: unknown, lo: number, hi: number): v is number => Number.isInteger(v) && Number(v) >= lo && Number(v) <= hi;
 const ids = (v: unknown): v is string[] => Array.isArray(v) && v.length <= 60 && v.every(text) && new Set(v).size === v.length;
@@ -81,7 +81,7 @@ export function exportICS(project: Project, schedule: Assignment[]): string {
     const team = project.teams.find(t => t.id === a.teamId)!;
     const date = new Date(`${project.date}T${project.startTime}:00Z`); date.setUTCMinutes(date.getUTCMinutes() + a.slot * project.slotMinutes);
     const end = new Date(date.getTime() + project.slotMinutes * 60_000);
-    lines.push('BEGIN:VEVENT', `UID:${escapeICS(`${project.id}-${a.teamId}`)}@juryflow.app`, `DTSTAMP:${stamp(new Date(`${project.date}T00:00:00Z`))}`, `DTSTART:${stamp(date)}`, `DTEND:${stamp(end)}`, `SUMMARY:${escapeICS(team.name)}`, `LOCATION:${escapeICS(project.rooms.find(r => r.id === a.roomId)!.name)}`, `DESCRIPTION:${escapeICS(`${project.name}\nJudges: ${a.judgeIds.map(id => project.judges.find(j => j.id === id)!.name).join(', ')}\n${team.track}`)}`, 'END:VEVENT');
+    lines.push('BEGIN:VEVENT', `UID:${encodeURIComponent(JSON.stringify([project.id, a.teamId]))}@juryflow.app`, `DTSTAMP:${stamp(new Date(`${project.date}T00:00:00Z`))}`, `DTSTART:${stamp(date)}`, `DTEND:${stamp(end)}`, `SUMMARY:${escapeICS(team.name)}`, `LOCATION:${escapeICS(project.rooms.find(r => r.id === a.roomId)!.name)}`, `DESCRIPTION:${escapeICS(`${project.name}\nJudges: ${a.judgeIds.map(id => project.judges.find(j => j.id === id)!.name).join(', ')}\n${team.track}`)}`, 'END:VEVENT');
   }
   lines.push('END:VCALENDAR'); return lines.map(fold).join('\r\n') + '\r\n';
 }

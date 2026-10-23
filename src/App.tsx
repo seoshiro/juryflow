@@ -18,6 +18,7 @@ import {
 } from "./io";
 import { validateSchedule } from "./engine";
 import { sameAssignment } from "./assignment";
+import { issueText } from "./issueText";
 import type { Assignment, Project, Team, SavedDocument } from "./types";
 import { Icon } from "./components/Icon";
 import { SlotPicker } from "./components/SlotPicker";
@@ -112,6 +113,7 @@ export default function App() {
   const {
     document: doc,
     setDocument: setStoredDocument,
+    setLanguage,
     replaceDocument,
     result,
     busy,
@@ -141,7 +143,7 @@ export default function App() {
   const fileInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
     importSequence.current++;
-  }, [doc]);
+  }, [doc.project, doc.schedule, doc.baseline]);
   const language = doc.language;
   useEffect(() => {
     window.document.documentElement.lang = language;
@@ -432,6 +434,8 @@ export default function App() {
               "Search limit reached. No conclusion yet.",
               "Лимит поиска. Вывод пока не сделан.",
             )
+          : result?.status === "cancelled"
+            ? t("Search cancelled. You can try again.", "Поиск отменён. Можно попробовать снова.")
           : previous.length
             ? t(
                 "The plan changed. Let’s put it back in order.",
@@ -540,10 +544,7 @@ export default function App() {
             <button
               className="language-button"
               onClick={() =>
-                setDocument((current) => ({
-                  ...current,
-                  language: language === "en" ? "ru" : "en",
-                }))
+                setLanguage(language === "en" ? "ru" : "en")
               }
               aria-label={
                 language === "en"
@@ -831,7 +832,7 @@ export default function App() {
                     </div>
                     <ul>
                       {result.issues.map((issue, i) => (
-                        <li key={`${issue.code}-${i}`}>{issue.message}</li>
+                        <li key={`${issue.code}-${i}`}>{issueText(issue, project, language)}</li>
                       ))}
                     </ul>
                     <p>
@@ -1056,8 +1057,8 @@ export default function App() {
                           </p>
                           <span className="eyebrow">
                             {t(
-                              "12 TEAMS. ZERO GUESSWORK.",
-                              "12 КОМАНД. ВСЁ ПО ПРАВИЛАМ.",
+                              `${project.teams.length} TEAMS. SCHEDULE NOT GENERATED.`,
+                              `${project.teams.length} КОМАНД. РАСПИСАНИЕ НЕ СОЗДАНО.`,
                             )}
                           </span>
                         </div>

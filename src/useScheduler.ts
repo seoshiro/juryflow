@@ -53,6 +53,14 @@ export function useScheduler() {
       return next;
     });
   }, [stop]);
+  // Presentation changes do not invalidate constraints, results or a running worker.
+  const setLanguage = useCallback((language: SavedDocument['language']) => {
+    update(prev => {
+      const next = { ...prev, language };
+      current.current = next;
+      return next;
+    });
+  }, []);
   /** Validate/canonicalize before atomically replacing the event and releasing recovery. */
   const replaceDocument = useCallback((value: SavedDocument): boolean => {
     try {
@@ -127,5 +135,5 @@ export function useScheduler() {
     setError('');
     setDocument(prev => ({ ...demoDocument(), language: prev.language }));
   }, [setDocument]);
-  return { document, setDocument, replaceDocument, result, busy, error, clearError, recovery, discardRecovery, saveState, run, cancel, resetDemo };
+  return { document, setDocument, setLanguage, replaceDocument, result, busy, error, clearError, recovery, discardRecovery, saveState, run, cancel, resetDemo };
 }

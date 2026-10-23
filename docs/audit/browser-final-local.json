@@ -1,0 +1,557 @@
+[
+  {
+    "repo": "juryflow",
+    "name": "initial-a11y",
+    "status": "PASS",
+    "evidence": {
+      "violations": 0
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "first-keyboard-focus",
+    "status": "PASS",
+    "evidence": {
+      "tag": "A",
+      "text": "Skip to workspace",
+      "outline": "solid",
+      "shadow": "none",
+      "r": {
+        "x": 10,
+        "y": 10,
+        "width": 135.875,
+        "height": 43,
+        "top": 10,
+        "right": 145.875,
+        "bottom": 53,
+        "left": 10
+      }
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "solve-edit-roundtrip",
+    "status": "PASS",
+    "evidence": {
+      "teams": 12,
+      "roundtrip": true,
+      "persistence": true
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "dialog-focus",
+    "status": "PASS",
+    "evidence": true
+  },
+  {
+    "repo": "juryflow",
+    "name": "editor-Teams",
+    "status": "PASS",
+    "evidence": {
+      "desktop": {
+        "violations": 0
+      },
+      "mobile": {
+        "violations": 0
+      },
+      "bounds": {
+        "innerWidth": 320,
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "offending": [
+          {
+            "tag": "BUTTON",
+            "class": "nav-item ",
+            "text": "Rooms02"
+          },
+          {
+            "tag": "SPAN",
+            "class": "",
+            "text": "Rooms"
+          },
+          {
+            "tag": "SPAN",
+            "class": "nav-count",
+            "text": "02"
+          },
+          {
+            "tag": "BUTTON",
+            "class": "nav-item ",
+            "text": "Event setup"
+          },
+          {
+            "tag": "svg",
+            "class": {},
+            "text": ""
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "text": ""
+          },
+          {
+            "tag": "SPAN",
+            "class": "",
+            "text": "Event setup"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "editor-Judges",
+    "status": "PASS",
+    "evidence": {
+      "desktop": {
+        "violations": 0
+      },
+      "mobile": {
+        "violations": 0
+      },
+      "bounds": {
+        "innerWidth": 320,
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "offending": [
+          {
+            "tag": "BUTTON",
+            "class": "nav-item ",
+            "text": "Rooms02"
+          },
+          {
+            "tag": "SPAN",
+            "class": "",
+            "text": "Rooms"
+          },
+          {
+            "tag": "SPAN",
+            "class": "nav-count",
+            "text": "02"
+          },
+          {
+            "tag": "BUTTON",
+            "class": "nav-item ",
+            "text": "Event setup"
+          },
+          {
+            "tag": "svg",
+            "class": {},
+            "text": ""
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "text": ""
+          },
+          {
+            "tag": "SPAN",
+            "class": "",
+            "text": "Event setup"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "editor-Rooms",
+    "status": "PASS",
+    "evidence": {
+      "desktop": {
+        "violations": 0
+      },
+      "mobile": {
+        "violations": 0
+      },
+      "bounds": {
+        "innerWidth": 320,
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "offending": [
+          {
+            "tag": "BUTTON",
+            "class": "nav-item active",
+            "text": "Rooms02"
+          },
+          {
+            "tag": "SPAN",
+            "class": "",
+            "text": "Rooms"
+          },
+          {
+            "tag": "SPAN",
+            "class": "nav-count",
+            "text": "02"
+          },
+          {
+            "tag": "BUTTON",
+            "class": "nav-item ",
+            "text": "Event setup"
+          },
+          {
+            "tag": "svg",
+            "class": {},
+            "text": ""
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "text": ""
+          },
+          {
+            "tag": "SPAN",
+            "class": "",
+            "text": "Event setup"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "editor-Event setup",
+    "status": "PASS",
+    "evidence": {
+      "desktop": {
+        "violations": 0
+      },
+      "mobile": {
+        "violations": 0
+      },
+      "bounds": {
+        "innerWidth": 320,
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "offending": [
+          {
+            "tag": "BUTTON",
+            "class": "nav-item ",
+            "text": "Rooms02"
+          },
+          {
+            "tag": "SPAN",
+            "class": "",
+            "text": "Rooms"
+          },
+          {
+            "tag": "SPAN",
+            "class": "nav-count",
+            "text": "02"
+          },
+          {
+            "tag": "BUTTON",
+            "class": "nav-item active",
+            "text": "Event setup"
+          },
+          {
+            "tag": "svg",
+            "class": {},
+            "text": ""
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "text": ""
+          },
+          {
+            "tag": "SPAN",
+            "class": "",
+            "text": "Event setup"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "layout-en-320",
+    "status": "PASS",
+    "evidence": {
+      "innerWidth": 320,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offending": [
+        {
+          "tag": "BUTTON",
+          "class": "nav-item ",
+          "text": "Rooms02"
+        },
+        {
+          "tag": "SPAN",
+          "class": "",
+          "text": "Rooms"
+        },
+        {
+          "tag": "SPAN",
+          "class": "nav-count",
+          "text": "02"
+        },
+        {
+          "tag": "BUTTON",
+          "class": "nav-item ",
+          "text": "Event setup"
+        },
+        {
+          "tag": "svg",
+          "class": {},
+          "text": ""
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "text": ""
+        },
+        {
+          "tag": "SPAN",
+          "class": "",
+          "text": "Event setup"
+        }
+      ]
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "layout-en-390",
+    "status": "PASS",
+    "evidence": {
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offending": [
+        {
+          "tag": "BUTTON",
+          "class": "nav-item ",
+          "text": "Event setup"
+        },
+        {
+          "tag": "svg",
+          "class": {},
+          "text": ""
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "text": ""
+        },
+        {
+          "tag": "SPAN",
+          "class": "",
+          "text": "Event setup"
+        }
+      ]
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "layout-en-768",
+    "status": "PASS",
+    "evidence": {
+      "innerWidth": 768,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offending": []
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "layout-en-1440",
+    "status": "PASS",
+    "evidence": {
+      "innerWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offending": []
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "a11y-en-320",
+    "status": "PASS",
+    "evidence": {
+      "violations": 0
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "dialog-en-320",
+    "status": "PASS",
+    "evidence": {
+      "violations": 0
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "layout-ru-320",
+    "status": "PASS",
+    "evidence": {
+      "innerWidth": 320,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offending": [
+        {
+          "tag": "BUTTON",
+          "class": "nav-item ",
+          "text": "Аудитории02"
+        },
+        {
+          "tag": "svg",
+          "class": {},
+          "text": ""
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "text": ""
+        },
+        {
+          "tag": "SPAN",
+          "class": "",
+          "text": "Аудитории"
+        },
+        {
+          "tag": "SPAN",
+          "class": "nav-count",
+          "text": "02"
+        },
+        {
+          "tag": "BUTTON",
+          "class": "nav-item ",
+          "text": "Настройки"
+        },
+        {
+          "tag": "svg",
+          "class": {},
+          "text": ""
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "text": ""
+        },
+        {
+          "tag": "SPAN",
+          "class": "",
+          "text": "Настройки"
+        }
+      ]
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "layout-ru-390",
+    "status": "PASS",
+    "evidence": {
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offending": [
+        {
+          "tag": "BUTTON",
+          "class": "nav-item ",
+          "text": "Аудитории02"
+        },
+        {
+          "tag": "SPAN",
+          "class": "",
+          "text": "Аудитории"
+        },
+        {
+          "tag": "SPAN",
+          "class": "nav-count",
+          "text": "02"
+        },
+        {
+          "tag": "BUTTON",
+          "class": "nav-item ",
+          "text": "Настройки"
+        },
+        {
+          "tag": "svg",
+          "class": {},
+          "text": ""
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "text": ""
+        },
+        {
+          "tag": "SPAN",
+          "class": "",
+          "text": "Настройки"
+        }
+      ]
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "layout-ru-768",
+    "status": "PASS",
+    "evidence": {
+      "innerWidth": 768,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offending": []
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "layout-ru-1440",
+    "status": "PASS",
+    "evidence": {
+      "innerWidth": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offending": []
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "a11y-ru-320",
+    "status": "PASS",
+    "evidence": {
+      "violations": 0
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "dialog-ru-320",
+    "status": "PASS",
+    "evidence": {
+      "violations": 0
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "reflow-720-css-pixels",
+    "status": "PASS",
+    "evidence": {
+      "innerWidth": 720,
+      "scrollWidth": 720,
+      "clientWidth": 720,
+      "offending": [],
+      "method": "720 CSS px viewport reflow; native browser zoom not asserted"
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "zero-judges-ru-unsat-language-preservation",
+    "status": "PASS",
+    "evidence": {
+      "ruBefore": "ЧТО МЕШАЕТ РАСПИСАНИЮ\nДоступных судей по слотам меньше, чем требуется мест в жюри. Добавьте доступность, слоты или судей.\n\nПроверки объясняют конфликт; это не доказанный минимальный набор причин. Измените ограничения или снимите закрепления и попробуйте снова.",
+      "en": "WHAT’S BLOCKING THE DAY\nAvailable judge-slots are fewer than the required panel places. Add availability, slots or judges.\n\nThese checks explain the conflict; this is not a proven smallest set of causes. Adjust constraints or unlock affected assignments, then try again.",
+      "ruAfter": "ЧТО МЕШАЕТ РАСПИСАНИЮ\nДоступных судей по слотам меньше, чем требуется мест в жюри. Добавьте доступность, слоты или судей.\n\nПроверки объясняют конфликт; это не доказанный минимальный набор причин. Измените ограничения или снимите закрепления и попробуйте снова."
+    }
+  },
+  {
+    "repo": "juryflow",
+    "name": "runtime-network",
+    "status": "PASS",
+    "evidence": {
+      "errors": [],
+      "network": []
+    }
+  }
+]

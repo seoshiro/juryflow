@@ -1,5 +1,7 @@
 # JURYFLOW
 
+[Independent deep audit and verified repair (23 October 2026)](docs/audit/QA-2026-10-23.md)
+
 **Every pitch, in place.** A scheduling desk for hackathon pitches and university defenses, built for Beibars / [seoshiro](https://github.com/seoshiro).
 
 Teams, judge panels, rooms, availability, conflicts of interest and locked assignments become one usable schedule. When a judge drops out, compare a repaired plan with the original. All demo identities are synthetic.
