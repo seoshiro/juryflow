@@ -4,6 +4,8 @@ import {
   useState,
   type ReactNode,
   type CSSProperties,
+  type Dispatch,
+  type SetStateAction,
 } from "react";
 import { useScheduler } from "./useScheduler";
 import {
@@ -12,11 +14,14 @@ import {
   parseDocument,
   serializeDocument,
   slotLabel,
+  MAX_DOCUMENT_BYTES,
 } from "./io";
 import { validateSchedule } from "./engine";
-import type { Assignment, Project, Team } from "./types";
+import { sameAssignment } from "./assignment";
+import type { Assignment, Project, Team, SavedDocument } from "./types";
 import { Icon } from "./components/Icon";
 import { SlotPicker } from "./components/SlotPicker";
+import { NumericField } from "./components/NumericField";
 import "./styles.css";
 
 type View = "schedule" | "teams" | "judges" | "rooms" | "settings";
@@ -26,42 +31,77 @@ function Dialog({
   title,
   onClose,
   children,
+  language,
 }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  language: "en" | "ru";
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const opener = useRef<HTMLElement | null>(null);
+  const restoreFrame = useRef<number | undefined>(undefined);
   useEffect(() => {
+    if (restoreFrame.current !== undefined)
+      cancelAnimationFrame(restoreFrame.current);
     const dialog = ref.current;
+    if (
+      !opener.current &&
+      window.document.activeElement instanceof HTMLElement
+    ) {
+      opener.current = window.document.activeElement;
+    }
     dialog?.showModal();
-    return () => dialog?.close();
+    return () => {
+      dialog?.close();
+      restoreFrame.current = requestAnimationFrame(() => {
+        if (dialog?.isConnected && dialog.open) return;
+        const target = opener.current?.isConnected
+          ? opener.current
+          : window.document.getElementById("main-content");
+        target?.focus();
+      });
+    };
   }, []);
   return (
     <dialog
       ref={ref}
       className="detail-dialog"
       aria-labelledby="dialog-title"
-      onCancel={onClose}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
     >
       <div className="dialog-top">
         <div>
-          <span className="eyebrow">JURYFLOW / DETAILS</span>
+          <span className="eyebrow">
+            {language === "ru"
+              ? "JURYFLOW / ПОДРОБНОСТИ"
+              : "JURYFLOW / DETAILS"}
+          </span>
           <h2 id="dialog-title">{title}</h2>
         </div>
         <button
           className="icon-button"
           onClick={onClose}
-          aria-label="Close details"
+          aria-label={
+            language === "ru" ? "Закрыть подробности" : "Close details"
+          }
         >
           <Icon name="close" />
         </button>
       </div>
       {children}
       <div className="dialog-bottom">
-        <span className="field-hint">Changes save on this device.</span>
+        <span className="field-hint">
+          {language === "ru"
+            ? "Изменения сохраняются на этом устройстве."
+            : "Changes save on this device."}
+        </span>
         <button className="button primary" onClick={onClose}>
-          Done <Icon name="check" size={16} />
+          {language === "ru" ? "Готово" : "Done"}{" "}
+          <Icon name="check" size={16} />
         </button>
       </div>
     </dialog>
@@ -71,14 +111,24 @@ function Dialog({
 export default function App() {
   const {
     document: doc,
-    setDocument,
+    setDocument: setStoredDocument,
+    replaceDocument,
     result,
     busy,
     error,
     run,
     cancel,
     resetDemo,
+    clearError,
+    recovery,
+    discardRecovery,
+    saveState,
   } = useScheduler();
+  const importSequence = useRef(0);
+  const setDocument: Dispatch<SetStateAction<SavedDocument>> = (value) => {
+    importSequence.current++;
+    setStoredDocument(value);
+  };
   const project = doc.project;
   const [view, setView] = useState<View>("schedule");
   const [scheduleTab, setScheduleTab] = useState<ScheduleTab>("schedule");
@@ -89,6 +139,9 @@ export default function App() {
   const [outageSlot, setOutageSlot] = useState(2);
   const [showOutage, setShowOutage] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    importSequence.current++;
+  }, [doc]);
   const language = doc.language;
   useEffect(() => {
     window.document.documentElement.lang = language;
@@ -119,12 +172,7 @@ export default function App() {
     ready && previous.length
       ? doc.schedule.filter((a) => {
           const b = previous.find((x) => x.teamId === a.teamId);
-          return (
-            !b ||
-            a.slot !== b.slot ||
-            a.roomId !== b.roomId ||
-            [...a.judgeIds].sort().join() !== [...b.judgeIds].sort().join()
-          );
+          return !b || !sameAssignment(a, b);
         })
       : [];
   const unchanged =
@@ -205,24 +253,38 @@ export default function App() {
     setScheduleTab("schedule");
   }
   async function importFile(file?: File) {
+    const operation = ++importSequence.current;
     if (!file) return;
-    if (file.size > 1_000_000) {
+    if (file.size > MAX_DOCUMENT_BYTES) {
       setFileError(
         t(
-          "File is too large. Maximum size is 1 MB.",
-          "Файл слишком большой. Максимум 1 МБ.",
+          "File is too large. Maximum size is 2 MB.",
+          "Файл слишком большой. Максимум 2 МБ.",
         ),
       );
       return;
     }
     try {
-      const parsed = parseDocument(await file.text());
+      const source = await file.text();
+      if (operation !== importSequence.current) return;
+      const parsed = parseDocument(source);
       if (!parsed.ok) {
         setFileError(parsed.error);
         return;
       }
+      if (
+        recovery &&
+        !window.confirm(
+          t(
+            "Replace the unreadable saved data with this import? Download the recovery data first if you need to keep it.",
+            "Заменить нечитаемые сохранённые данные этим импортом? Сначала скачайте исходные данные, если хотите сохранить их.",
+          ),
+        )
+      )
+        return;
+      if (operation !== importSequence.current) return;
       cancel();
-      setDocument(parsed.value);
+      if (!replaceDocument(parsed.value)) return;
       setFileError("");
       setNotice(
         t(
@@ -232,6 +294,7 @@ export default function App() {
       );
       setView("schedule");
     } catch {
+      if (operation !== importSequence.current) return;
       setFileError(
         t(
           "Could not read this file. Choose a valid JURYFLOW JSON file.",
@@ -241,23 +304,35 @@ export default function App() {
     }
   }
   function exportJSON() {
-    const serialized = serializeDocument(doc);
-    if (!parseDocument(serialized).ok) {
-      setFileError(
+    try {
+      const serialized = serializeDocument(doc);
+      const checked = parseDocument(serialized);
+      if (!checked.ok) {
+        setFileError(
+          t(
+            "Complete required event fields before exporting JSON. Names, date and time must be valid.",
+            "Заполните обязательные поля перед экспортом JSON. Проверьте названия, дату и время.",
+          ) +
+            " " +
+            checked.error,
+        );
+        return;
+      }
+      downloadText("juryflow-workspace.json", serialized, "application/json");
+      setNotice(
         t(
-          "Complete required event fields before exporting JSON. Names, date and time must be valid.",
-          "Заполните обязательные поля перед экспортом JSON. Проверьте названия, дату и время.",
+          "Workspace exported, including constraints and schedule.",
+          "Рабочая область экспортирована с ограничениями и расписанием.",
         ),
       );
-      return;
+    } catch (cause) {
+      setFileError(
+        t("Could not export JSON: ", "Не удалось экспортировать JSON: ") +
+          (cause instanceof Error
+            ? cause.message
+            : t("Unknown export error.", "Неизвестная ошибка экспорта.")),
+      );
     }
-    downloadText("juryflow-workspace.json", serialized, "application/json");
-    setNotice(
-      t(
-        "Workspace exported, including constraints and schedule.",
-        "Рабочая область экспортирована с ограничениями и расписанием.",
-      ),
-    );
   }
   function exportCalendar() {
     if (ready) {
@@ -281,7 +356,19 @@ export default function App() {
     setTimeout(() => window.print(), 0);
   }
   function reset() {
+    importSequence.current++;
+    if (
+      recovery &&
+      !window.confirm(
+        t(
+          "Discard the unreadable saved data and start the demo? Download the recovery data first if you need to keep it.",
+          "Удалить нечитаемые сохранённые данные и начать демо? Сначала скачайте исходные данные, если хотите сохранить их.",
+        ),
+      )
+    )
+      return;
     cancel();
+    if (recovery) discardRecovery();
     resetDemo();
     setView("schedule");
     setDetailTeam(null);
@@ -422,7 +509,10 @@ export default function App() {
             href="https://github.com/seoshiro/juryflow"
             target="_blank"
             rel="noreferrer"
-            aria-label="JURYFLOW source on GitHub"
+            aria-label={t(
+              "JURYFLOW source on GitHub",
+              "Исходный код JURYFLOW на GitHub",
+            )}
           >
             ↗
           </a>
@@ -439,7 +529,11 @@ export default function App() {
           <div className="topbar-tools">
             <span className="local-save">
               <span />
-              {t("Saved on device", "Сохранено локально")}
+              {recovery || saveState === "paused"
+                ? t("Autosave paused", "Автосохранение приостановлено")
+                : saveState === "error"
+                  ? t("Not saved on device", "Не сохранено на устройстве")
+                  : t("Saved on device", "Сохранено локально")}
             </span>
             <button
               className="language-button"
@@ -451,8 +545,8 @@ export default function App() {
               }
               aria-label={
                 language === "en"
-                  ? "Switch to Russian"
-                  : "Переключить на английский"
+                  ? "EN — Switch to Russian"
+                  : "RU — Переключить на английский"
               }
             >
               <Icon name="globe" size={15} />
@@ -469,7 +563,7 @@ export default function App() {
               type="file"
               ref={fileInput}
               accept=".json,application/json"
-              aria-label="Import JSON"
+              aria-label={t("Import JSON", "Импорт JSON")}
               className="visually-hidden"
               onChange={(e) => {
                 void importFile(e.target.files?.[0]);
@@ -516,7 +610,7 @@ export default function App() {
                 className="icon-button print-button"
                 onClick={printSchedule}
                 disabled={!ready}
-                aria-label="Print schedule"
+                aria-label={t("Print schedule", "Распечатать расписание")}
                 title={t("Print schedule", "Распечатать расписание")}
               >
                 <Icon name="print" />
@@ -524,14 +618,63 @@ export default function App() {
             </div>
           </div>
 
+          {recovery && (
+            <section
+              className="recovery-banner no-print"
+              role="alert"
+              aria-labelledby="recovery-title"
+            >
+              <Icon name="alert" />
+              <div>
+                <strong id="recovery-title">
+                  {t(
+                    "Your saved data needs recovery",
+                    "Сохранённые данные требуют восстановления",
+                  )}
+                </strong>
+                <p>{recovery.message}</p>
+                <p>
+                  {t(
+                    "Autosave is paused to protect the existing data. Download the original data before replacing it, or import a valid backup. Ordinary edits will not overwrite it.",
+                    "Автосохранение приостановлено для защиты исходных данных. Скачайте их перед заменой или импортируйте корректную резервную копию. Обычные правки не перезапишут исходные данные.",
+                  )}
+                </p>
+                <div className="recovery-actions">
+                  <button
+                    className="button subtle"
+                    disabled={recovery.raw === null}
+                    onClick={() => {
+                      if (recovery.raw !== null)
+                        downloadText(
+                          "juryflow-recovery.txt",
+                          recovery.raw,
+                          "text/plain;charset=utf-8",
+                        );
+                    }}
+                  >
+                    {t("Download recovery data", "Скачать исходные данные")}
+                  </button>
+                  <button className="button subtle" onClick={reset}>
+                    {t(
+                      "Discard saved data and start demo",
+                      "Удалить сохранённые данные и начать демо",
+                    )}
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
           {(fileError || error) && (
             <div className="message error-message" role="alert">
               <Icon name="alert" />
               <span>{fileError || error}</span>
               <button
                 className="icon-button"
-                aria-label="Dismiss error"
-                onClick={() => setFileError("")}
+                aria-label={t("Dismiss error", "Закрыть ошибку")}
+                onClick={() => {
+                  setFileError("");
+                  clearError();
+                }}
               >
                 <Icon name="close" size={16} />
               </button>
@@ -543,7 +686,7 @@ export default function App() {
               <span>{notice}</span>
               <button
                 className="icon-button"
-                aria-label="Dismiss notification"
+                aria-label={t("Dismiss notification", "Закрыть уведомление")}
                 onClick={() => setNotice("")}
               >
                 <Icon name="close" size={15} />
@@ -645,14 +788,11 @@ export default function App() {
                     <button
                       className="button primary"
                       onClick={() => {
+                        importSequence.current++;
                         setNotice("");
                         run(previous.length ? previous : undefined);
                       }}
-                      aria-label={
-                        previous.length && !ready
-                          ? "Replan schedule"
-                          : "Generate schedule"
-                      }
+                      data-testid="schedule-action"
                     >
                       <Icon
                         name={previous.length && !ready ? "reset" : "spark"}
@@ -663,7 +803,9 @@ export default function App() {
                         : ready
                           ? t("Regenerate", "Сгенерировать заново")
                           : t("Generate schedule", "Сгенерировать")}
-                      <span className="button-short-arrow">↗</span>
+                      <span className="button-short-arrow" aria-hidden="true">
+                        ↗
+                      </span>
                     </button>
                   )}
                 </div>
@@ -675,7 +817,10 @@ export default function App() {
                 result.status !== "cancelled" && (
                   <section
                     className="diagnostics"
-                    aria-label="Constraint explanation"
+                    aria-label={t(
+                      "Constraint explanation",
+                      "Объяснение ограничений",
+                    )}
                   >
                     <div className="eyebrow">
                       {result.status === "infeasible"
@@ -722,12 +867,15 @@ export default function App() {
                                   ? "changes"
                                   : "schedule";
                           setScheduleTab(nextTab);
-                          const tabButtons = event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+                          const tabButtons =
+                            event.currentTarget.querySelectorAll<HTMLButtonElement>(
+                              '[role="tab"]',
+                            );
                           tabButtons[nextTab === "schedule" ? 0 : 1]?.focus();
                         }
                       }}
                       role="tablist"
-                      aria-label="Schedule views"
+                      aria-label={t("Schedule views", "Виды расписания")}
                     >
                       <button
                         role="tab"
@@ -820,7 +968,7 @@ export default function App() {
                                     data-testid="team-card"
                                     className={`pitch-card ${changed ? "changed" : ""}`}
                                     onClick={() => setDetailTeam(pitch.id)}
-                                    aria-label={`${pitch.name}, ${slotLabel(project, slot)}, ${room.name}${locked(pitch.id) ? ", locked" : ""}`}
+                                    aria-label={`${pitch.name}, ${slotLabel(project, slot)}, ${room.name}${locked(pitch.id) ? t(", locked", ", закреплено") : ""}`}
                                   >
                                     <span className="pitch-top">
                                       <span
@@ -1116,7 +1264,10 @@ export default function App() {
                           <strong>{j.name}</strong>
                           <div
                             className="availability-ticks"
-                            aria-label={`${j.availableSlots.length} of ${project.slotCount} slots available`}
+                            aria-label={t(
+                              `${j.availableSlots.length} of ${project.slotCount} slots available`,
+                              `Доступно слотов: ${j.availableSlots.length} из ${project.slotCount}`,
+                            )}
                           >
                             {slots.map((s) => (
                               <i
@@ -1168,7 +1319,7 @@ export default function App() {
                           <select
                             value={effectiveOutageJudge}
                             onChange={(e) => setOutageJudge(e.target.value)}
-                            aria-label="Unavailable judge"
+                            aria-label={t("Judge", "Судья")}
                           >
                             {project.judges.map((j) => (
                               <option key={j.id} value={j.id}>
@@ -1184,7 +1335,7 @@ export default function App() {
                             onChange={(e) =>
                               setOutageSlot(Number(e.target.value))
                             }
-                            aria-label="Unavailable from"
+                            aria-label={t("Unavailable from", "Недоступен с")}
                           >
                             {slots.map((s) => (
                               <option key={s} value={s}>
@@ -1200,11 +1351,6 @@ export default function App() {
                       disabled={!ready || busy || !project.judges.length}
                       onClick={() =>
                         showOutage ? simulateOutage() : setShowOutage(true)
-                      }
-                      aria-label={
-                        showOutage
-                          ? "Confirm judge outage"
-                          : "Simulate judge outage"
                       }
                     >
                       <Icon name="reset" size={15} />
@@ -1276,9 +1422,14 @@ export default function App() {
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <label>
-                      <span className="visually-hidden">Team name {i + 1}</span>
+                      <span className="visually-hidden">
+                        {t(`Team name ${i + 1}`, `Название команды ${i + 1}`)}
+                      </span>
                       <input
-                        aria-label={`Team name ${i + 1}`}
+                        aria-label={t(
+                          `Team name ${i + 1}`,
+                          `Название команды ${i + 1}`,
+                        )}
                         value={item.name}
                         maxLength={100}
                         onChange={(e) =>
@@ -1288,7 +1439,10 @@ export default function App() {
                     </label>
                     <label>
                       <span className="visually-hidden">
-                        Track for {item.name}
+                        {t(
+                          `Track for ${item.name}`,
+                          `Трек команды ${item.name}`,
+                        )}
                       </span>
                       <input
                         value={item.track}
@@ -1301,7 +1455,6 @@ export default function App() {
                     <button
                       className="constraint-button"
                       onClick={() => setDetailTeam(item.id)}
-                      aria-label={`Constraints for ${item.name}`}
                     >
                       <span>
                         {item.requiredJudgeIds.length +
@@ -1311,11 +1464,17 @@ export default function App() {
                             : 0)}
                       </span>
                       {t("constraints", "ограничений")}
+                      <span className="visually-hidden">
+                        {t(` for ${item.name}`, ` команды ${item.name}`)}
+                      </span>
                       <Icon name="chevron" size={13} />
                     </button>
                     <button
                       className="icon-button delete-button"
-                      aria-label={`Delete team ${item.name}`}
+                      aria-label={t(
+                        `Delete team ${item.name}`,
+                        `Удалить команду ${item.name}`,
+                      )}
                       onClick={() =>
                         updateProject((p) => ({
                           ...p,
@@ -1388,7 +1547,10 @@ export default function App() {
                       <label>
                         {t("Name", "Имя")}
                         <input
-                          aria-label={`Judge name ${i + 1}`}
+                          aria-label={t(
+                            `Judge name ${i + 1}`,
+                            `Имя судьи ${i + 1}`,
+                          )}
                           maxLength={100}
                           value={j.name}
                           onChange={(e) =>
@@ -1407,7 +1569,10 @@ export default function App() {
                         {t("Expertise", "Экспертиза")}
                         <input
                           maxLength={100}
-                          aria-label={`Expertise for ${j.name}`}
+                          aria-label={t(
+                            `Expertise for ${j.name}`,
+                            `Экспертиза судьи ${j.name}`,
+                          )}
                           value={j.expertise}
                           onChange={(e) =>
                             updateProject((p) => ({
@@ -1423,7 +1588,10 @@ export default function App() {
                       </label>
                       <button
                         className="icon-button delete-button"
-                        aria-label={`Delete judge ${j.name}`}
+                        aria-label={t(
+                          `Delete judge ${j.name}`,
+                          `Удалить судью ${j.name}`,
+                        )}
                         onClick={() =>
                           updateProject((p) => ({
                             ...p,
@@ -1527,7 +1695,10 @@ export default function App() {
                       <label>
                         {t("Room name", "Название зала")}
                         <input
-                          aria-label={`Room name ${i + 1}`}
+                          aria-label={t(
+                            `Room name ${i + 1}`,
+                            `Название аудитории ${i + 1}`,
+                          )}
                           maxLength={100}
                           value={room.name}
                           onChange={(e) =>
@@ -1544,7 +1715,10 @@ export default function App() {
                       </label>
                       <button
                         className="icon-button delete-button"
-                        aria-label={`Delete room ${room.name}`}
+                        aria-label={t(
+                          `Delete room ${room.name}`,
+                          `Удалить аудиторию ${room.name}`,
+                        )}
                         onClick={() =>
                           updateProject((p) => ({
                             ...p,
@@ -1610,7 +1784,7 @@ export default function App() {
                 <label className="wide-field">
                   {t("Event name", "Название события")}
                   <input
-                    aria-label="Event name"
+                    aria-label={t("Event name", "Название события")}
                     maxLength={120}
                     value={project.name}
                     onChange={(e) =>
@@ -1622,7 +1796,7 @@ export default function App() {
                   {t("Date", "Дата")}
                   <input
                     type="date"
-                    aria-label="Event date"
+                    aria-label={t("Event date", "Дата события")}
                     value={project.date}
                     onChange={(e) =>
                       updateProject((p) => ({ ...p, date: e.target.value }))
@@ -1633,7 +1807,7 @@ export default function App() {
                   {t("First pitch (UTC)", "Первый питч (UTC)")}
                   <input
                     type="time"
-                    aria-label="Start time"
+                    aria-label={t("Start time", "Время начала")}
                     value={project.startTime}
                     onChange={(e) =>
                       updateProject((p) => ({
@@ -1645,36 +1819,35 @@ export default function App() {
                 </label>
                 <label>
                   {t("Minutes per pitch", "Минут на выступление")}
-                  <input
-                    type="number"
+                  <NumericField
                     min={5}
                     max={120}
-                    aria-label="Minutes per pitch"
+                    label={t("Minutes per pitch", "Минут на выступление")}
+                    language={language}
+                    onDraftChange={() => {
+                      importSequence.current++;
+                    }}
                     value={project.slotMinutes}
-                    onChange={(e) =>
+                    onCommit={(minutes) =>
                       updateProject((p) => ({
                         ...p,
-                        slotMinutes: Math.min(
-                          120,
-                          Math.max(5, Number(e.target.value)),
-                        ),
+                        slotMinutes: minutes,
                       }))
                     }
                   />
                 </label>
                 <label>
                   {t("Number of slots", "Количество слотов")}
-                  <input
-                    type="number"
+                  <NumericField
                     min={1}
                     max={32}
-                    aria-label="Number of slots"
+                    label={t("Number of slots", "Количество слотов")}
+                    language={language}
+                    onDraftChange={() => {
+                      importSequence.current++;
+                    }}
                     value={project.slotCount}
-                    onChange={(e) => {
-                      const count = Math.min(
-                        32,
-                        Math.max(1, Number(e.target.value)),
-                      );
+                    onCommit={(count) => {
                       updateProject((p) => {
                         const fit = (a: number[]) => [
                           ...a.filter((s) => s < count),
@@ -1742,7 +1915,11 @@ export default function App() {
       </div>
 
       {team && (
-        <Dialog title={team.name} onClose={() => setDetailTeam(null)}>
+        <Dialog
+          title={team.name}
+          language={language}
+          onClose={() => setDetailTeam(null)}
+        >
           {assignment && ready && (
             <div className="assignment-detail">
               <div>
@@ -1760,7 +1937,7 @@ export default function App() {
                   type="checkbox"
                   checked={locked(team.id)}
                   onChange={(e) => setLock(assignment, e.target.checked)}
-                  aria-label="Lock assignment"
+                  aria-label={t("Lock assignment", "Закрепить назначение")}
                 />
                 <Icon name="lock" size={16} />
                 {t("Lock assignment", "Закрепить назначение")}
@@ -1798,7 +1975,7 @@ export default function App() {
             <label>
               {t("Team name", "Название команды")}
               <input
-                aria-label="Selected team name"
+                aria-label={t("Team name", "Название команды")}
                 maxLength={100}
                 value={team.name}
                 onChange={(e) => updateTeam(team.id, { name: e.target.value })}
@@ -1807,7 +1984,7 @@ export default function App() {
             <label>
               {t("Judges per pitch", "Судей на выступление")}
               <select
-                aria-label="Judges per pitch"
+                aria-label={t("Judges per pitch", "Судей на выступление")}
                 value={team.judgeCount}
                 onChange={(e) =>
                   updateTeam(team.id, { judgeCount: Number(e.target.value) })
@@ -1851,7 +2028,10 @@ export default function App() {
                 <strong>{j.name}</strong>
                 <input
                   type="checkbox"
-                  aria-label={`Require ${j.name}`}
+                  aria-label={t(
+                    `Require ${j.name}`,
+                    `Обязательное участие: ${j.name}`,
+                  )}
                   checked={team.requiredJudgeIds.includes(j.id)}
                   onChange={(e) =>
                     updateTeam(team.id, {
@@ -1863,7 +2043,10 @@ export default function App() {
                 />
                 <input
                   type="checkbox"
-                  aria-label={`Conflict with ${j.name}`}
+                  aria-label={t(
+                    `Conflict with ${j.name}`,
+                    `Конфликт интересов: ${j.name}`,
+                  )}
                   checked={team.excludedJudgeIds.includes(j.id)}
                   onChange={(e) =>
                     updateTeam(team.id, {

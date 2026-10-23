@@ -1,0 +1,32 @@
+{
+  "url": "https://seoshiro.github.io/juryflow/",
+  "release": "1b4120604039fc4e315b1ad35d32d5bc73d42bf9",
+  "observedAt": "2026-10-23T17:38:12.963Z",
+  "runner": "tests/e2e/repair-baseline.mjs",
+  "results": {
+    "UI-01": { "field": "50", "stored": 50 },
+    "SEC-01": {
+      "importedName": "Audit retention fixture",
+      "storedChars": 2345754,
+      "exportError": "Complete required event fields before exporting JSON. Names, date and time must be valid.",
+      "restoredName": "Frontier / Demo Day"
+    },
+    "SEC-02": {
+      "sourceChars": 5723,
+      "ballastChars": 5237100,
+      "copyError": "QuotaExceededError",
+      "primaryPreserved": false,
+      "backupExists": false
+    },
+    "ALG-01": { "afterNewer": "Slow event A", "afterReset": "Slow event A" },
+    "UI-02": { "tag": "BODY", "text": null },
+    "ALG-02": { "changes": "Changes\n0", "changedCards": 0, "panel": ["a,b", "c"] },
+    "UI-04": {
+      "en": { "text": "Regenerate\n↗", "name": "Generate schedule" },
+      "ru": { "text": "Сгенерировать заново\n↗", "name": "Generate schedule" },
+      "englishDoneInRuDialog": 1
+    },
+    "UI-05": { "textWidth": 40.1875, "textHeight": 257, "viewport": 320 },
+    "UI-03": { "before": "The scheduling worker could not start. Reload the app and try again.", "remains": 1 }
+  }
+}

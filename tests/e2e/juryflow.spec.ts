@@ -60,7 +60,7 @@ async function importJSON(page: Page, value: unknown) {
 }
 
 async function solve(page: Page) {
-  await page.getByRole('button', { name: 'Generate schedule', exact: true }).click();
+  await page.getByRole('button', { name: /^Generate schedule(?:\s*↗)?$/ }).click();
   await expect(page.getByTestId('team-card')).toHaveCount(12);
 }
 
@@ -102,7 +102,7 @@ test('real demo, outage replan, independent constraints, persistence and calenda
   const changes = after.schedule.filter(a => {
     const original = before.schedule.find(b => b.teamId === a.teamId)!;
     return a.slot !== original.slot || a.roomId !== original.roomId ||
-      [...a.judgeIds].sort().join() !== [...original.judgeIds].sort().join();
+      JSON.stringify([...a.judgeIds].sort()) !== JSON.stringify([...original.judgeIds].sort());
   });
   expect(changes.length).toBeGreaterThan(0);
   expect(changes.length).toBeLessThan(12);
@@ -235,7 +235,7 @@ test('preserves an unfinished local draft after reload while JSON import stays s
 test('all editors and the team dialog are keyboard accessible', async ({ page }, testInfo) => {
   await page.getByRole('button', { name: /^Teams/ }).click();
   await assertAccessible(page, 'teams-editor', testInfo);
-  await page.getByRole('button', { name: 'Constraints for Orbit Notes', exact: true }).focus();
+  await page.getByRole('button', { name: /constraints for Orbit Notes/i }).focus();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('dialog')).toBeVisible();
   await assertAccessible(page, 'team-dialog', testInfo);
@@ -266,18 +266,18 @@ test('print keeps a column for every configured room', async ({ page }) => {
 });
 
 test('Russian language persists on reload, updates the document language and remains usable', async ({ page }) => {
-  await page.getByRole('button', { name: 'Switch to Russian', exact: true }).click();
+  await page.getByRole('button', { name: /Switch to Russian/ }).click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Идеи');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
   await expect(page.getByRole('button', { name: 'Расписание', exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: 'Generate schedule', exact: true }).click();
+  await page.getByRole('button', { name: /^Сгенерировать(?:\s*↗)?$/ }).click();
   await expect(page.getByTestId('team-card')).toHaveCount(12);
   await expect(page.getByTestId('status')).toContainText('Всё готово');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
-  await page.getByRole('button', { name: 'Переключить на английский', exact: true }).click();
+  await page.getByRole('button', { name: /Переключить на английский/ }).click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.getByTestId('status')).toContainText('All clear');
 });

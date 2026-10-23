@@ -1,4 +1,5 @@
 import type { Assignment, Issue, Project, SolveOptions, SolveResult, Team } from '../types';
+import { sameAssignment as same } from '../assignment';
 
 const LIMITS = { teams: 60, judges: 12, rooms: 8, slots: 32 };
 const record = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -9,7 +10,6 @@ const integer = (value: unknown): value is number => typeof value === 'number' &
 const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
 const unique = <T,>(values: T[]) => new Set(values).size === values.length;
 const issue = (code: string, message: string, teamIds?: string[]): Issue => ({ code, message, ...(teamIds ? { teamIds } : {}) });
-const same = (a: Assignment, b: Assignment) => a.teamId === b.teamId && a.slot === b.slot && a.roomId === b.roomId && [...a.judgeIds].sort(compare).join('\0') === [...b.judgeIds].sort(compare).join('\0');
 
 /** Validate structural input and locked assignments before any search. Limits bound browser work. */
 export function validateProject(project: Project): Issue[] {

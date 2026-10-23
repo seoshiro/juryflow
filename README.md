@@ -4,7 +4,7 @@
 
 Teams, judge panels, rooms, availability, conflicts of interest and locked assignments become one usable schedule. When a judge drops out, compare a repaired plan with the original. All demo identities are synthetic.
 
-**[Open the app](https://seoshiro.github.io/juryflow/)** · [One-minute demo](docs/DEMO.md) · [QA evidence](docs/QA.md)
+**[Open the app](https://seoshiro.github.io/juryflow/)** · [One-minute demo](docs/DEMO.md) · [Original QA](docs/QA.md) · [Audit repair regressions](docs/REPAIR-QA.md)
 
 ![Actual JURYFLOW schedule](docs/screenshots/schedule-desktop.png)
 
@@ -23,6 +23,7 @@ npm run dev
 npm run typecheck
 npm run lint
 npm test
+npm run test:oracle
 npm run build
 npx playwright install chromium
 npm run test:e2e
@@ -39,7 +40,7 @@ The production build is `dist/`. It uses relative asset URLs and works at a GitH
 - `src/engine/index.ts` is a pure typed scheduling engine. `validateSchedule` checks complete plans independently of search.
 - `src/scheduler.worker.ts` isolates search from the UI. The hook terminates workers on cancellation, edits, and stale requests. A five-second outer watchdog bounds worker failure; engine search has a 1.8-second / 120,000-node budget.
 - `src/useScheduler.ts` manages local persistence under `juryflow.document.v1`. JSON import is a validated, versioned document boundary. Unsupported versions, broken references and invalid stored schedules are rejected.
-- Unfinished local form edits survive reload. If persisted data becomes unreadable, the app keeps a recovery copy in `juryflow.recovery.v1` and reports the problem instead of silently discarding it.
+- Unfinished local form edits survive reload. If persisted data becomes unreadable, autosave pauses and the primary value stays untouched. The recovery banner offers the original raw download even when a full storage quota prevents a separate backup. Explicit confirmation is required to discard or replace the unreadable event. A storage-read failure also pauses writes; raw download is unavailable when the browser cannot return the value.
 - `src/io.ts` produces JSON and UTC iCalendar exports from the same assignments shown on screen. Calendar text is escaped and UTF-8 lines folded. Print CSS renders the current valid schedule.
 - No server, tracking, paid service, LLM call or remote personal-data storage. The application works locally after its static files load. This is not an offline-installable PWA.
 
@@ -55,8 +56,9 @@ A valid incumbent is returned even if preference search reaches its budget. **Fe
 
 - One event, fixed-length slots, one date/start time in **UTC**. Calendar exports preserve UTC. Slots may cross midnight; labels show the day offset.
 - Up to 60 teams, 12 judges, 8 rooms and 32 slots; slot length 5–120 minutes. Empty availability is allowed and can make an event infeasible.
-- JSON has `schemaVersion: 1`, `project`, `schedule`, `baseline`, and `language`. Export a document to keep a backup or transfer browsers. Import limit: 2 MB.
+- JSON has `schemaVersion: 1`, `project`, `schedule`, `baseline`, and `language`. Only schema fields are retained; unsupported metadata is discarded during normalization. Import source and canonical exported JSON each have the same **2,000,000 UTF-8 byte** limit. The canonical serialized size is checked before replacement, and persistence uses the same serializer. Export a document to keep a backup or transfer browsers.
 - Baseline assignments are historical comparison data; current assignments are validated against current constraints. Editing constraints invalidates the current plan until generation succeeds.
+- Change counts compare team placement (slot index, room and unordered judge IDs); they do not compare historical wall-clock event timing. Judge IDs are compared as array elements, so commas in valid imported IDs cannot hide a changed panel.
 - Core controls switch between English and Russian; some detail helper text and technical constraint diagnostics remain English.
 
 ## Tradeoffs and limitations
@@ -66,6 +68,8 @@ This is a bounded finite-domain solver, not a commercial optimizer. Larger const
 ## Quality and deployment
 
 Vitest covers hard constraints, invalid locks, unsatisfiable cases, deterministic output, search limits, document validation and calendar output. Playwright uses an independent constraint oracle on the integrated production build, tests reload, imports, exports, keyboard use and a 390 px viewport, and runs axe accessibility checks. See the checked-in QA report for actual executed results.
+
+The audit repair suite also covers sequential numeric typing, delayed file-read races, native storage quota/recovery, canonical JSON round trips, modal focus return, localized accessible names, worker error dismissal and the 320 px status layout. `npm run test:repair` runs these browser regressions; `npm run test:oracle` repeats the original independent small-event brute-force checks. The [repair report](docs/REPAIR-QA.md) separates reproduced baseline failures from final candidate and live results.
 
 GitHub Actions runs typecheck, lint, unit tests, production build and Chromium E2E before publishing that same `dist/` artifact to GitHub Pages. Public-repository standard Linux Actions and public Pages are available without a paid plan ([GitHub documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)). No billing settings are changed.
 

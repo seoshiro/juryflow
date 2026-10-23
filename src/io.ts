@@ -1,5 +1,11 @@
 import type { Assignment, Project, SavedDocument } from './types';
 import { validateSchedule } from './engine';
+/** Import source, canonical export and persisted draft share this UTF-8 byte limit. */
+export const MAX_DOCUMENT_BYTES = 2_000_000;
+export const documentBytes = (source: string): number => new TextEncoder().encode(source).byteLength;
+function assertDocumentSize(source: string): void {
+  if (source.length > MAX_DOCUMENT_BYTES || documentBytes(source) > MAX_DOCUMENT_BYTES) throw new Error(`Document exceeds the ${MAX_DOCUMENT_BYTES.toLocaleString('en-US')}-byte UTF-8 limit (2 MB).`);
+}
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const clean = (v: string) => !Array.from(v).some(c => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127);
 const text = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0 && v.length <= 160 && clean(v);
@@ -25,20 +31,38 @@ function checkProject(p: unknown, draft = false): p is Project {
 export function parseDocument(source: string): { ok: true; value: SavedDocument } | { ok: false; error: string } { return parse(source, false); }
 /** Local editing can temporarily leave names/date/time blank. Never weakens the import boundary. */
 export function restoreDraft(source: string): ReturnType<typeof parseDocument> { return parse(source, true); }
+function canonicalAssignment(a: Assignment): Assignment { return { teamId: a.teamId, slot: a.slot, roomId: a.roomId, judgeIds: [...a.judgeIds] }; }
+/** Copy schema fields explicitly: arbitrary imported metadata never enters application state. */
+function canonicalDocument(doc: SavedDocument): SavedDocument {
+  const p = doc.project;
+  return {
+    schemaVersion: 1,
+    project: {
+      id: p.id, name: p.name, date: p.date, startTime: p.startTime, slotMinutes: p.slotMinutes, slotCount: p.slotCount,
+      teams: p.teams.map(t => ({ id: t.id, name: t.name, track: t.track, availableSlots: [...t.availableSlots], requiredJudgeIds: [...t.requiredJudgeIds], excludedJudgeIds: [...t.excludedJudgeIds], judgeCount: t.judgeCount })),
+      judges: p.judges.map(j => ({ id: j.id, name: j.name, expertise: j.expertise, availableSlots: [...j.availableSlots] })),
+      rooms: p.rooms.map(r => ({ id: r.id, name: r.name, availableSlots: [...r.availableSlots] })),
+      locks: p.locks.map(canonicalAssignment),
+    },
+    schedule: doc.schedule.map(canonicalAssignment), baseline: doc.baseline.map(canonicalAssignment), language: doc.language,
+  };
+}
 function parse(source: string, draft: boolean): ReturnType<typeof parseDocument> {
   try {
-    if (source.length > 2_000_000) throw new Error('File exceeds the 2 MB limit.');
+    assertDocumentSize(source);
     const v: unknown = JSON.parse(source);
     if (!record(v) || v.schemaVersion !== 1) throw new Error('Unsupported document. Expected schemaVersion: 1.');
     if (!checkProject(v.project, draft)) throw new Error('Invalid event data. Check IDs, references, date, availability and limits (60 teams / 12 judges / 8 rooms / 32 slots).');
     if (!assignments(v.schedule) || !assignments(v.baseline) || (v.language !== 'en' && v.language !== 'ru')) throw new Error('Invalid schedule, baseline or language.');
     let schedule = v.schedule;
     if (schedule.length) { const issues = validateSchedule(v.project, schedule); if (issues.length) { if (draft) schedule = []; else throw new Error(`Stored schedule is invalid: ${issues[0].message}`); } }
-    const project = structuredClone(v.project);
-    return { ok: true, value: { schemaVersion: 1, project, schedule, baseline: v.baseline, language: v.language } };
+    const value = canonicalDocument({ schemaVersion: 1, project: v.project, schedule, baseline: v.baseline, language: v.language });
+    // Pretty output can be larger than compact source. Never accept a document we cannot save/reimport.
+    serializeDocument(value);
+    return { ok: true, value };
   } catch (e) { return { ok: false, error: e instanceof SyntaxError ? 'This file is not valid JSON.' : e instanceof Error ? e.message : 'Unable to read this document.' }; }
 }
-export function serializeDocument(doc: SavedDocument): string { return JSON.stringify(doc, null, 2); }
+export function serializeDocument(doc: SavedDocument): string { const source = JSON.stringify(canonicalDocument(doc), null, 2); assertDocumentSize(source); return source; }
 export function slotLabel(project: Project, slot: number): string {
   const minutes = Number(project.startTime.slice(0, 2)) * 60 + Number(project.startTime.slice(3)) + slot * project.slotMinutes;
   return `${String(Math.floor(minutes / 60) % 24).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}${minutes >= 1440 ? ` +${Math.floor(minutes / 1440)}d` : ''}`;

@@ -1,0 +1,41 @@
+import { chromium } from '@playwright/test';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+const output = new URL('../../docs/screenshots/', import.meta.url);
+await mkdir(output, { recursive: true });
+const url = process.env.E2E_BASE_URL || 'http://127.0.0.1:4177';
+const browser = await chromium.launch();
+const evidence = { source: url, capturedAt: new Date().toISOString(), browserErrors: [] };
+try {
+  const context = await browser.newContext({ viewport: { width: 320, height: 844 }, acceptDownloads: true });
+  const page = await context.newPage();
+  page.on('pageerror', error => evidence.browserErrors.push(error.message));
+  await page.goto(url);
+  await page.getByRole('button', { name: 'Generate schedule', exact: true }).click();
+  await page.getByTestId('team-card').nth(11).waitFor();
+  evidence.status320 = await page.locator('.status-copy').boundingBox();
+  await page.screenshot({ path: fileURLToPath(new URL('repair-status-320.png', output)) });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.getByRole('button', { name: /Switch to Russian/ }).click();
+  await page.getByTestId('team-card').first().click();
+  await page.getByRole('button', { name: 'Готово', exact: true }).waitFor();
+  await page.screenshot({ path: fileURLToPath(new URL('repair-russian-dialog.png', output)) });
+  await context.close();
+  const recovery = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  const recoveryPage = await recovery.newPage();
+  recoveryPage.on('pageerror', error => evidence.browserErrors.push(error.message));
+  await recoveryPage.goto(url);
+  await recoveryPage.waitForFunction(() => !!localStorage.getItem('juryflow.document.v1'));
+  await recoveryPage.evaluate(() => {
+    const value = JSON.parse(localStorage.getItem('juryflow.document.v1'));
+    value.project.name = 'Synthetic recovery example';
+    localStorage.setItem('juryflow.document.v1', JSON.stringify(value).slice(0, -1));
+  });
+  await recoveryPage.reload();
+  await recoveryPage.getByRole('button', { name: 'Download recovery data', exact: true }).waitFor();
+  await recoveryPage.screenshot({ path: fileURLToPath(new URL('repair-recovery.png', output)), fullPage: true });
+  evidence.recoveryControlVisible = true;
+  await recovery.close();
+  await writeFile(new URL('repair-capture-evidence.json', output), JSON.stringify(evidence, null, 2));
+  console.log(JSON.stringify(evidence, null, 2));
+} finally { await browser.close(); }

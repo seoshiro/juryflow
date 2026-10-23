@@ -11,8 +11,10 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:repair": "playwright test repair.spec.ts",
+    "test:oracle": "node tests/e2e/repair-oracle.mjs",
     "screenshots": "node tests/e2e/capture.mjs",
-    "verify": "npm run typecheck && npm run lint && npm test && npm run build && npm run test:e2e"
+    "verify": "npm run typecheck && npm run lint && npm test && npm run test:oracle && npm run build && npm run test:e2e"
   },
   "dependencies": {
     "react": "^19.3.1",

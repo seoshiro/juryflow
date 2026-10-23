@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "id": "audit",
+    "name": "Synthetic Audit",
+    "date": "2026-10-23",
+    "startTime": "23:45",
+    "slotMinutes": 15,
+    "slotCount": 1,
+    "teams": [
+      {
+        "id": "t0",
+        "name": "Team 0",
+        "track": "audit",
+        "availableSlots": [
+          0
+        ],
+        "requiredJudgeIds": [
+          "a,b",
+          "c"
+        ],
+        "excludedJudgeIds": [],
+        "judgeCount": 2
+      }
+    ],
+    "judges": [
+      {
+        "id": "a",
+        "name": "Judge 0",
+        "expertise": "",
+        "availableSlots": [
+          0
+        ]
+      },
+      {
+        "id": "b,c",
+        "name": "Judge 1",
+        "expertise": "",
+        "availableSlots": [
+          0
+        ]
+      },
+      {
+        "id": "a,b",
+        "name": "Judge 2",
+        "expertise": "",
+        "availableSlots": [
+          0
+        ]
+      },
+      {
+        "id": "c",
+        "name": "Judge 3",
+        "expertise": "",
+        "availableSlots": [
+          0
+        ]
+      }
+    ],
+    "rooms": [
+      {
+        "id": "r0",
+        "name": "Room 0",
+        "availableSlots": [
+          0
+        ]
+      }
+    ],
+    "locks": []
+  },
+  "schedule": [],
+  "baseline": [
+    {
+      "teamId": "t0",
+      "slot": 0,
+      "roomId": "r0",
+      "judgeIds": [
+        "a",
+        "b,c"
+      ]
+    }
+  ],
+  "language": "en"
+}
