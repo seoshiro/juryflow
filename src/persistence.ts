@@ -4,6 +4,7 @@ import type { SavedDocument } from './types';
 
 export const DOCUMENT_KEY = 'juryflow.document.v1';
 export const RECOVERY_KEY = 'juryflow.recovery.v1';
+export const DRAFT_SAVE_ERROR = 'Draft not saved: correct the invalid date, time or text to resume autosave. The last saved event is preserved.';
 export type StorageAccess = Pick<Storage, 'getItem' | 'setItem'>;
 export interface Recovery { raw: string | null; message: string }
 export interface LoadedDocument { document: SavedDocument; recovery: Recovery | null }
@@ -43,6 +44,7 @@ export function persistDocument(storage: StorageAccess | null, document: SavedDo
   if (recovery) return { status: 'blocked' };
   try {
     const source = serializeDocument(document);
+    if (!restoreDraft(source).ok) return { status: 'error', message: DRAFT_SAVE_ERROR };
     if (!storage) throw new Error('Storage unavailable');
     storage.setItem(DOCUMENT_KEY, source);
     return { status: 'saved' };

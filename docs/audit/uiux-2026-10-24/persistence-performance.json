@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-24T07:53:30.637Z",
+  "method": "identical maximum60team/12judge/8room/32slot doc; in-memory write; one warmup; 7 alternating before/after100-call batches; node24win32; core only",
+  "results": {
+    "before": {
+      "minMsPer100": 20.596400000000017,
+      "medianMsPer100": 21.100199999999973,
+      "maxMsPer100": 21.807900000000018,
+      "medianMsPerSave": 0.21100199999999972
+    },
+    "after": {
+      "minMsPer100": 71.70399999999995,
+      "medianMsPer100": 72.45679999999999,
+      "maxMsPer100": 81.03339999999997,
+      "medianMsPerSave": 0.7245679999999999
+    }
+  }
+}

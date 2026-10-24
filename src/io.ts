@@ -53,9 +53,19 @@ function parse(source: string, draft: boolean): ReturnType<typeof parseDocument>
     const v: unknown = JSON.parse(source);
     if (!record(v) || v.schemaVersion !== 1) throw new Error('Unsupported document. Expected schemaVersion: 1.');
     if (!checkProject(v.project, draft)) throw new Error('Invalid event data. Check IDs, references, date, availability and limits (60 teams / 12 judges / 8 rooms / 32 slots).');
-    if (!assignments(v.schedule) || !assignments(v.baseline) || (v.language !== 'en' && v.language !== 'ru')) throw new Error('Invalid schedule, baseline or language.');
+    if (!assignments(v.schedule) || !assignments(v.baseline) || new Set(v.baseline.map(a => a.teamId)).size !== v.baseline.length || (v.language !== 'en' && v.language !== 'ru')) throw new Error('Invalid schedule, baseline or language. Baseline team assignments must be unique.');
     let schedule = v.schedule;
-    if (schedule.length) { const issues = validateSchedule(v.project, schedule); if (issues.length) { if (draft) schedule = []; else throw new Error(`Stored schedule is invalid: ${issues[0].message}`); } }
+    if (schedule.length) {
+      // Empty display labels are legitimate unfinished drafts, not changed constraints.
+      const p = v.project;
+      const scheduleProject = draft ? { ...p, name: p.name.trim() ? p.name : p.id,
+        teams: p.teams.map(team => ({ ...team, name: team.name.trim() ? team.name : team.id })),
+        judges: p.judges.map(judge => ({ ...judge, name: judge.name.trim() ? judge.name : judge.id })),
+        rooms: p.rooms.map(room => ({ ...room, name: room.name.trim() ? room.name : room.id })),
+      } : p;
+      const issues = validateSchedule(scheduleProject, schedule);
+      if (issues.length) { if (draft) schedule = []; else throw new Error(`Stored schedule is invalid: ${issues[0].message}`); }
+    }
     const value = canonicalDocument({ schemaVersion: 1, project: v.project, schedule, baseline: v.baseline, language: v.language });
     // Pretty output can be larger than compact source. Never accept a document we cannot save/reimport.
     serializeDocument(value);
@@ -81,6 +91,7 @@ export function exportICS(project: Project, schedule: Assignment[]): string {
     const team = project.teams.find(t => t.id === a.teamId)!;
     const date = new Date(`${project.date}T${project.startTime}:00Z`); date.setUTCMinutes(date.getUTCMinutes() + a.slot * project.slotMinutes);
     const end = new Date(date.getTime() + project.slotMinutes * 60_000);
+    if (date.getUTCFullYear() > 9999 || end.getUTCFullYear() > 9999) throw new Error('Calendar dates must stay within the four-digit year range.');
     lines.push('BEGIN:VEVENT', `UID:${encodeURIComponent(JSON.stringify([project.id, a.teamId]))}@juryflow.app`, `DTSTAMP:${stamp(new Date(`${project.date}T00:00:00Z`))}`, `DTSTART:${stamp(date)}`, `DTEND:${stamp(end)}`, `SUMMARY:${escapeICS(team.name)}`, `LOCATION:${escapeICS(project.rooms.find(r => r.id === a.roomId)!.name)}`, `DESCRIPTION:${escapeICS(`${project.name}\nJudges: ${a.judgeIds.map(id => project.judges.find(j => j.id === id)!.name).join(', ')}\n${team.track}`)}`, 'END:VEVENT');
   }
   lines.push('END:VCALENDAR'); return lines.map(fold).join('\r\n') + '\r\n';

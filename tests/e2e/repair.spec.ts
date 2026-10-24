@@ -161,7 +161,7 @@ for (const action of ['newer import', 'reset', 'edit'] as const) {
     await page.waitForFunction(() => window.auditImportWaiting === true);
     let expected: string;
     if (action === 'newer import') { const next = structuredClone(original); next.project.name = 'Newer event B'; await importJSON(page, next, 'fast-b.json'); expected = 'Newer event B'; await expect(page.getByText(expected, { exact: true })).toBeVisible(); }
-    else if (action === 'reset') { page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Reset demo', exact: true }).click(); expected = 'Frontier / Demo Day'; }
+    else if (action === 'reset') { await page.getByRole('button', { name: 'Reset demo', exact: true }).click(); await page.getByTestId('confirm-destructive').click(); expected = 'Frontier / Demo Day'; }
     else { await page.getByRole('button', { name: 'Event setup', exact: true }).click(); await page.getByLabel('Event name', { exact: true }).fill('Newer document edit'); expected = 'Newer document edit'; }
     await page.evaluate(() => window.releaseAuditImport?.());
     await page.waitForFunction(() => window.auditImportFinished === true);
@@ -231,6 +231,13 @@ test('UI-02: editor dialog restores its opener and a removed schedule opener has
   await page.getByTestId('team-card').filter({ hasText: 'Orbit Notes' }).click();
   await page.getByRole('dialog').getByLabel('Team name', { exact: true }).fill('Edited team');
   await page.getByRole('dialog').getByRole('button', { name: 'Done', exact: true }).click();
+  // Display-only edits retain the schedule opener; true constraints still remove it.
+  const retainedOpener = page.getByTestId('team-card').filter({ hasText: 'Edited team' });
+  await expect(retainedOpener).toBeFocused();
+  await retainedOpener.click();
+  await page.getByRole('dialog').getByLabel('Judges per pitch', { exact: true }).selectOption('2');
+  await page.getByRole('dialog').getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(page.getByTestId('team-card')).toHaveCount(0);
   await expect(page.locator('#main-content')).toBeFocused();
 });
 

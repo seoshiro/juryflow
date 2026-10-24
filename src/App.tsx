@@ -19,11 +19,13 @@ import {
 import { validateSchedule } from "./engine";
 import { sameAssignment } from "./assignment";
 import { issueText } from "./issueText";
+import { DRAFT_SAVE_ERROR } from "./persistence";
 import type { Assignment, Project, Team, SavedDocument } from "./types";
 import { Icon } from "./components/Icon";
 import { SlotPicker } from "./components/SlotPicker";
 import { NumericField } from "./components/NumericField";
 import "./styles.css";
+import "./refinements.css";
 
 type View = "schedule" | "teams" | "judges" | "rooms" | "settings";
 type ScheduleTab = "schedule" | "changes";
@@ -33,11 +35,13 @@ function Dialog({
   onClose,
   children,
   language,
+  showFooter = true,
 }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
   language: "en" | "ru";
+  showFooter?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
@@ -53,6 +57,7 @@ function Dialog({
       opener.current = window.document.activeElement;
     }
     dialog?.showModal();
+    dialog?.querySelector<HTMLElement>("[data-dialog-initial-focus]")?.focus();
     return () => {
       dialog?.close();
       restoreFrame.current = requestAnimationFrame(() => {
@@ -94,17 +99,19 @@ function Dialog({
         </button>
       </div>
       {children}
-      <div className="dialog-bottom">
-        <span className="field-hint">
-          {language === "ru"
-            ? "Изменения сохраняются на этом устройстве."
-            : "Changes save on this device."}
-        </span>
-        <button className="button primary" onClick={onClose}>
-          {language === "ru" ? "Готово" : "Done"}{" "}
-          <Icon name="check" size={16} />
-        </button>
-      </div>
+      {showFooter && (
+        <div className="dialog-bottom">
+          <span className="field-hint">
+            {language === "ru"
+              ? "Изменения сохраняются на этом устройстве."
+              : "Changes save on this device."}
+          </span>
+          <button className="button primary" onClick={onClose}>
+            {language === "ru" ? "Готово" : "Done"}{" "}
+            <Icon name="check" size={16} />
+          </button>
+        </div>
+      )}
     </dialog>
   );
 }
@@ -136,6 +143,12 @@ export default function App() {
   const [scheduleTab, setScheduleTab] = useState<ScheduleTab>("schedule");
   const [detailTeam, setDetailTeam] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
+  const [pendingAction, setPendingAction] = useState<{
+    title: string;
+    description: string;
+    confirmLabel: string;
+    run: () => void;
+  } | null>(null);
   const [fileError, setFileError] = useState("");
   const [outageJudge, setOutageJudge] = useState("");
   const [outageSlot, setOutageSlot] = useState(2);
@@ -194,20 +207,41 @@ export default function App() {
       .join("")
       .toUpperCase();
 
-  function updateProject(update: (p: Project) => Project) {
+  function updateProject(
+    update: (p: Project) => Project,
+    changesConstraints = true,
+  ) {
     setDocument((current) => ({
       ...current,
       project: update(current.project),
-      baseline: current.schedule.length ? current.schedule : current.baseline,
-      schedule: [],
+      baseline:
+        changesConstraints && current.schedule.length
+          ? current.schedule
+          : current.baseline,
+      schedule: changesConstraints ? [] : current.schedule,
     }));
     setNotice("");
   }
   function updateTeam(id: string, patch: Partial<Team>) {
-    updateProject((p) => ({
-      ...p,
-      teams: p.teams.map((x) => (x.id === id ? { ...x, ...patch } : x)),
-    }));
+    updateProject(
+      (p) => ({
+        ...p,
+        teams: p.teams.map((x) => (x.id === id ? { ...x, ...patch } : x)),
+      }),
+      Object.keys(patch).some((key) => key !== "name" && key !== "track"),
+    );
+  }
+  function requestRemoval(label: string, run: () => void) {
+    importSequence.current++;
+    setPendingAction({
+      title: t("Remove from event?", "Удалить из события?"),
+      description: t(
+        `“${label}” will be removed. The current schedule will need replanning. Cancel to export a JSON copy first.`,
+        `Запись «${label}» будет удалена. Расписание потребуется собрать заново. Отмените действие, если сначала нужна копия JSON.`,
+      ),
+      confirmLabel: t("Delete", "Удалить"),
+      run,
+    });
   }
   function setLock(a: Assignment, value: boolean) {
     setDocument((current) => ({
@@ -339,7 +373,8 @@ export default function App() {
     }
   }
   function exportCalendar() {
-    if (ready) {
+    if (!ready) return;
+    try {
       downloadText(
         "juryflow-schedule.ics",
         exportICS(project, doc.schedule),
@@ -349,6 +384,13 @@ export default function App() {
         t(
           "Calendar exported. Times are in UTC.",
           "Календарь экспортирован. Время в UTC.",
+        ),
+      );
+    } catch {
+      setFileError(
+        t(
+          "Calendar dates exceed the supported range. Choose an earlier event date or shorten the schedule.",
+          "Даты календаря выходят за допустимый диапазон. Выберите более раннюю дату или сократите расписание.",
         ),
       );
     }
@@ -361,16 +403,22 @@ export default function App() {
   }
   function reset() {
     importSequence.current++;
-    if (
-      recovery &&
-      !window.confirm(
-        t(
-          "Discard the unreadable saved data and start the demo? Download the recovery data first if you need to keep it.",
-          "Удалить нечитаемые сохранённые данные и начать демо? Сначала скачайте исходные данные, если хотите сохранить их.",
-        ),
-      )
-    )
-      return;
+    setPendingAction({
+      title: t("Restore the demo?", "Восстановить демо?"),
+      description: recovery
+        ? t(
+            "This replaces the unreadable saved event. Cancel and download the recovery data first if you need to keep it.",
+            "Это заменит нечитаемое сохранённое событие. Отмените действие и сначала скачайте исходные данные, если нужна копия.",
+          )
+        : t(
+            "This replaces your teams, judges, rooms, settings and schedule with synthetic demo data. Cancel to export a JSON copy first.",
+            "Команды, жюри, залы, настройки и расписание будут заменены демо-данными. Отмените действие, если сначала нужна копия JSON.",
+          ),
+      confirmLabel: t("Restore demo", "Восстановить демо"),
+      run: performReset,
+    });
+  }
+  function performReset() {
     cancel();
     if (recovery) discardRecovery();
     resetDemo();
@@ -435,23 +483,29 @@ export default function App() {
               "Лимит поиска. Вывод пока не сделан.",
             )
           : result?.status === "cancelled"
-            ? t("Search cancelled. You can try again.", "Поиск отменён. Можно попробовать снова.")
-          : previous.length
             ? t(
-                "The plan changed. Let’s put it back in order.",
-                "Условия изменились. Соберём расписание заново.",
+                "Search cancelled. You can try again.",
+                "Поиск отменён. Можно попробовать снова.",
               )
-            : t(
-                "Your pitch day, ready to take shape.",
-                "Ваш день выступлений готов к планированию.",
-              );
+            : previous.length
+              ? t(
+                  "The plan changed. Let’s put it back in order.",
+                  "Условия изменились. Соберём расписание заново.",
+                )
+              : t(
+                  "Your pitch day, ready to take shape.",
+                  "Ваш день выступлений готов к планированию.",
+                );
 
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
         {t("Skip to workspace", "Перейти к рабочей области")}
       </a>
-      <aside className="sidebar no-print">
+      <aside
+        className="sidebar no-print"
+        aria-label={t("Workspace tools", "Инструменты рабочей области")}
+      >
         <a href="#main-content" className="brand" aria-label="Juryflow home">
           <span className="brand-mark">
             <i />
@@ -543,9 +597,7 @@ export default function App() {
             </span>
             <button
               className="language-button"
-              onClick={() =>
-                setLanguage(language === "en" ? "ru" : "en")
-              }
+              onClick={() => setLanguage(language === "en" ? "ru" : "en")}
               aria-label={
                 language === "en"
                   ? "EN — Switch to Russian"
@@ -564,6 +616,8 @@ export default function App() {
             </button>
             <input
               type="file"
+              tabIndex={-1}
+              aria-hidden="true"
               ref={fileInput}
               accept=".json,application/json"
               aria-label={t("Import JSON", "Импорт JSON")}
@@ -670,7 +724,15 @@ export default function App() {
           {(fileError || error) && (
             <div className="message error-message" role="alert">
               <Icon name="alert" />
-              <span>{fileError || error}</span>
+              <span>
+                {fileError ||
+                  (error === DRAFT_SAVE_ERROR
+                    ? t(
+                        DRAFT_SAVE_ERROR,
+                        "Черновик не сохранён: исправьте дату, время или текст. Последняя сохранённая версия события защищена.",
+                      )
+                    : error)}
+              </span>
               <button
                 className="icon-button"
                 aria-label={t("Dismiss error", "Закрыть ошибку")}
@@ -832,7 +894,9 @@ export default function App() {
                     </div>
                     <ul>
                       {result.issues.map((issue, i) => (
-                        <li key={`${issue.code}-${i}`}>{issueText(issue, project, language)}</li>
+                        <li key={`${issue.code}-${i}`}>
+                          {issueText(issue, project, language)}
+                        </li>
                       ))}
                     </ul>
                     <p>
@@ -910,7 +974,7 @@ export default function App() {
                   </div>
                   {scheduleTab === "schedule" ? (
                     <div
-                      className="schedule-table"
+                      className={`schedule-table ${ready ? "" : "is-empty"}`}
                       style={
                         {
                           "--room-count": Math.max(project.rooms.length, 1),
@@ -1033,7 +1097,7 @@ export default function App() {
                           <div className="empty-symbol">
                             <Icon name="grid" size={28} />
                           </div>
-                          <h3>
+                          <h2>
                             {previous.length
                               ? t(
                                   "A fresh plan starts here.",
@@ -1043,7 +1107,7 @@ export default function App() {
                                   "A place for every idea.",
                                   "Место для каждой идеи.",
                                 )}
-                          </h3>
+                          </h2>
                           <p>
                             {previous.length
                               ? t(
@@ -1169,7 +1233,10 @@ export default function App() {
                   </div>
                 </section>
 
-                <aside className="operations-aside no-print">
+                <aside
+                  className="operations-aside no-print"
+                  aria-label={t("Day overview", "Обзор дня")}
+                >
                   <section className="day-brief">
                     <div className="aside-heading">
                       <span className="eyebrow">
@@ -1479,11 +1546,13 @@ export default function App() {
                         `Удалить команду ${item.name}`,
                       )}
                       onClick={() =>
-                        updateProject((p) => ({
-                          ...p,
-                          teams: p.teams.filter((x) => x.id !== item.id),
-                          locks: p.locks.filter((a) => a.teamId !== item.id),
-                        }))
+                        requestRemoval(item.name, () =>
+                          updateProject((p) => ({
+                            ...p,
+                            teams: p.teams.filter((x) => x.id !== item.id),
+                            locks: p.locks.filter((a) => a.teamId !== item.id),
+                          })),
+                        )
                       }
                     >
                       <Icon name="trash" size={15} />
@@ -1557,14 +1626,17 @@ export default function App() {
                           maxLength={100}
                           value={j.name}
                           onChange={(e) =>
-                            updateProject((p) => ({
-                              ...p,
-                              judges: p.judges.map((x) =>
-                                x.id === j.id
-                                  ? { ...x, name: e.target.value }
-                                  : x,
-                              ),
-                            }))
+                            updateProject(
+                              (p) => ({
+                                ...p,
+                                judges: p.judges.map((x) =>
+                                  x.id === j.id
+                                    ? { ...x, name: e.target.value }
+                                    : x,
+                                ),
+                              }),
+                              false,
+                            )
                           }
                         />
                       </label>
@@ -1578,14 +1650,17 @@ export default function App() {
                           )}
                           value={j.expertise}
                           onChange={(e) =>
-                            updateProject((p) => ({
-                              ...p,
-                              judges: p.judges.map((x) =>
-                                x.id === j.id
-                                  ? { ...x, expertise: e.target.value }
-                                  : x,
-                              ),
-                            }))
+                            updateProject(
+                              (p) => ({
+                                ...p,
+                                judges: p.judges.map((x) =>
+                                  x.id === j.id
+                                    ? { ...x, expertise: e.target.value }
+                                    : x,
+                                ),
+                              }),
+                              false,
+                            )
                           }
                         />
                       </label>
@@ -1596,22 +1671,24 @@ export default function App() {
                           `Удалить судью ${j.name}`,
                         )}
                         onClick={() =>
-                          updateProject((p) => ({
-                            ...p,
-                            judges: p.judges.filter((x) => x.id !== j.id),
-                            teams: p.teams.map((x) => ({
-                              ...x,
-                              requiredJudgeIds: x.requiredJudgeIds.filter(
-                                (id) => id !== j.id,
-                              ),
-                              excludedJudgeIds: x.excludedJudgeIds.filter(
-                                (id) => id !== j.id,
+                          requestRemoval(j.name, () =>
+                            updateProject((p) => ({
+                              ...p,
+                              judges: p.judges.filter((x) => x.id !== j.id),
+                              teams: p.teams.map((x) => ({
+                                ...x,
+                                requiredJudgeIds: x.requiredJudgeIds.filter(
+                                  (id) => id !== j.id,
+                                ),
+                                excludedJudgeIds: x.excludedJudgeIds.filter(
+                                  (id) => id !== j.id,
+                                ),
+                              })),
+                              locks: p.locks.filter(
+                                (a) => !a.judgeIds.includes(j.id),
                               ),
                             })),
-                            locks: p.locks.filter(
-                              (a) => !a.judgeIds.includes(j.id),
-                            ),
-                          }))
+                          )
                         }
                       >
                         <Icon name="trash" size={16} />
@@ -1705,14 +1782,17 @@ export default function App() {
                           maxLength={100}
                           value={room.name}
                           onChange={(e) =>
-                            updateProject((p) => ({
-                              ...p,
-                              rooms: p.rooms.map((x) =>
-                                x.id === room.id
-                                  ? { ...x, name: e.target.value }
-                                  : x,
-                              ),
-                            }))
+                            updateProject(
+                              (p) => ({
+                                ...p,
+                                rooms: p.rooms.map((x) =>
+                                  x.id === room.id
+                                    ? { ...x, name: e.target.value }
+                                    : x,
+                                ),
+                              }),
+                              false,
+                            )
                           }
                         />
                       </label>
@@ -1723,11 +1803,15 @@ export default function App() {
                           `Удалить аудиторию ${room.name}`,
                         )}
                         onClick={() =>
-                          updateProject((p) => ({
-                            ...p,
-                            rooms: p.rooms.filter((x) => x.id !== room.id),
-                            locks: p.locks.filter((a) => a.roomId !== room.id),
-                          }))
+                          requestRemoval(room.name, () =>
+                            updateProject((p) => ({
+                              ...p,
+                              rooms: p.rooms.filter((x) => x.id !== room.id),
+                              locks: p.locks.filter(
+                                (a) => a.roomId !== room.id,
+                              ),
+                            })),
+                          )
                         }
                       >
                         <Icon name="trash" size={16} />
@@ -1791,7 +1875,10 @@ export default function App() {
                     maxLength={120}
                     value={project.name}
                     onChange={(e) =>
-                      updateProject((p) => ({ ...p, name: e.target.value }))
+                      updateProject(
+                        (p) => ({ ...p, name: e.target.value }),
+                        false,
+                      )
                     }
                   />
                 </label>
@@ -1799,6 +1886,7 @@ export default function App() {
                   {t("Date", "Дата")}
                   <input
                     type="date"
+                    max="9999-12-31"
                     aria-label={t("Event date", "Дата события")}
                     value={project.date}
                     onChange={(e) =>
@@ -2062,6 +2150,36 @@ export default function App() {
               </div>
             ))}
           </fieldset>
+        </Dialog>
+      )}
+      {pendingAction && (
+        <Dialog
+          title={pendingAction.title}
+          language={language}
+          onClose={() => setPendingAction(null)}
+          showFooter={false}
+        >
+          <p className="confirm-copy">{pendingAction.description}</p>
+          <div className="confirm-actions">
+            <button
+              className="button"
+              data-dialog-initial-focus
+              onClick={() => setPendingAction(null)}
+            >
+              {t("Cancel", "Отмена")}
+            </button>
+            <button
+              className="button primary"
+              data-testid="confirm-destructive"
+              onClick={() => {
+                const action = pendingAction.run;
+                setPendingAction(null);
+                action();
+              }}
+            >
+              {pendingAction.confirmLabel}
+            </button>
+          </div>
         </Dialog>
       )}
     </div>

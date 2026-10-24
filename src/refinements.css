@@ -1,0 +1,124 @@
+/* Keep the editorial layout while making the working controls readable and reachable. */
+.main-nav .nav-item {
+  min-height: 44px;
+}
+.text-button {
+  font-size: 12px;
+  min-height: 36px;
+}
+.status-copy strong {
+  font-size: 13px;
+}
+.status-copy > span,
+.event-name div > span,
+.checks-list,
+.editor-toolbar p {
+  font-size: 12px;
+}
+.event-name div > span > b:last-of-type {
+  display: inline;
+}
+.schedule-table.is-empty .schedule-row {
+  /* The legacy mobile agenda also sets display with !important. */
+  display: none !important;
+}
+.schedule-table.is-empty .empty-schedule-overlay {
+  position: relative;
+  inset: auto;
+  min-height: 310px;
+  padding: 40px 24px;
+}
+.schedule-table.is-empty .empty-schedule-overlay h2 {
+  font-size: 30px;
+}
+.schedule-table.is-empty .empty-schedule-overlay p {
+  font-size: 13px;
+}
+.settings-form input:invalid {
+  border-color: var(--red);
+}
+.confirm-copy {
+  font-size: 14px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+.confirm-actions .button {
+  min-height: 44px;
+}
+@media (max-width: 650px) {
+  .main-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    overflow: visible;
+    padding-bottom: 0;
+    margin-top: 16px;
+  }
+  .nav-item {
+    min-width: 0;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 4px;
+    gap: 4px;
+    justify-content: center;
+    font-size: 12px;
+  }
+  .nav-item svg {
+    display: none;
+  }
+  .nav-item.active {
+    box-shadow: inset 0 -2px var(--green);
+  }
+  .nav-count {
+    margin-left: 0;
+    font-size: 10px;
+  }
+  .button,
+  .text-button,
+  .icon-button,
+  .language-button {
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .icon-button,
+  .language-button {
+    min-width: 44px;
+  }
+  .editor-section input,
+  .settings-form input,
+  .detail-dialog input,
+  .detail-dialog select {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .pitch-bottom,
+  .pitch-top,
+  .grid-cell::before,
+  .availability-label,
+  .field-hint {
+    font-size: 11px;
+  }
+  .pitch-card > strong {
+    -webkit-line-clamp: unset;
+    overflow-wrap: anywhere;
+  }
+  .schedule-table.is-empty .empty-schedule-overlay {
+    min-height: 270px;
+    padding: 32px 18px;
+  }
+  .schedule-table.is-empty .empty-schedule-overlay h2 {
+    font-size: 26px;
+  }
+  .grid-footer,
+  .grid-footer > .text-button,
+  .timezone {
+    font-size: 11px;
+  }
+}

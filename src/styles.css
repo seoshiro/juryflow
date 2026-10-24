@@ -869,7 +869,7 @@ h1 {
   color: #5c694c;
   margin-bottom: 20px;
 }
-.empty-schedule-overlay h3 {
+.empty-schedule-overlay h2 {
   font-family: Georgia, serif;
   font-weight: 400;
   font-size: 27px;
@@ -2439,7 +2439,7 @@ h1 {
     top: 34px;
     padding: 65px 20px 20px;
   }
-  .empty-schedule-overlay h3 {
+  .empty-schedule-overlay h2 {
     font-size: 25px;
     max-width: 200px;
   }
@@ -3120,7 +3120,7 @@ h1 {
     bottom: 0;
     padding-top: 70px;
   }
-  .empty-schedule-overlay h3 {
+  .empty-schedule-overlay h2 {
     font-size: 30px;
   }
   .empty-schedule-overlay p {

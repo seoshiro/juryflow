@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import type { Assignment, SavedDocument, SolveResult, WorkerResponse } from './types';
 import { demoDocument } from './demo';
 import { restoreDraft, serializeDocument } from './io';
-import { loadDocument, persistDocument } from './persistence';
+import { DRAFT_SAVE_ERROR, loadDocument, persistDocument } from './persistence';
 import type { Recovery, StorageAccess } from './persistence';
 
 function browserStorage(): StorageAccess | null {
@@ -85,6 +85,7 @@ export function useScheduler() {
     const saved = persistDocument(browserStorage(), document, recovery);
     setSaveState(saved.status === 'saved' ? 'saved' : saved.status === 'blocked' ? 'paused' : 'error');
     if (saved.status === 'error') setError(saved.message);
+    else if (saved.status === 'saved') setError(previous => previous === DRAFT_SAVE_ERROR ? '' : previous);
   }, [document, recovery]);
   useEffect(() => () => stop(), [stop]);
   const run = useCallback((previous?: Assignment[]) => {

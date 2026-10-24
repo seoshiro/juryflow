@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-24T07:56:16.415Z",
+  "results": [
+    {
+      "name": "reject five-digit date without replacing last good event",
+      "status": "PASS"
+    },
+    {
+      "name": "reject nonexistent date without replacing last good event",
+      "status": "PASS"
+    },
+    {
+      "name": "reject invalid time without replacing last good event",
+      "status": "PASS"
+    },
+    {
+      "name": "reject C1 control in pasted name without replacing last good event",
+      "status": "PASS"
+    },
+    {
+      "name": "reject overlong name without replacing last good event",
+      "status": "PASS"
+    },
+    {
+      "name": "blank names/date/time remain persistable unfinished drafts",
+      "status": "PASS"
+    },
+    {
+      "name": "infeasible availability remains persistable and editable",
+      "status": "PASS"
+    },
+    {
+      "name": "unfinished blank display labels preserve a valid existing schedule across draft reload",
+      "status": "PASS"
+    },
+    {
+      "name": "a real judge availability conflict still clears an invalid restored schedule",
+      "status": "PASS"
+    },
+    {
+      "name": "reject identical duplicate historical team IDs",
+      "status": "FAIL",
+      "message": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "name": "reject conflicting duplicate historical team IDs",
+      "status": "FAIL",
+      "message": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "name": "historical references to removed entities remain importable",
+      "status": "PASS"
+    }
+  ]
+}

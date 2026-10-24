@@ -1,0 +1,9 @@
+{
+  "seed": "0x24cafe61",
+  "cases": 400,
+  "replans": 93,
+  "locked": 28,
+  "sat": 100,
+  "unsat": 300,
+  "failures": []
+}

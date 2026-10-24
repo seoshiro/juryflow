@@ -1,0 +1,478 @@
+{
+  "date": "2026-10-24",
+  "repo": "juryflow",
+  "baseline": "26e3bbf31672fffff8638d8d749420fda6484106",
+  "unitTests": 82,
+  "finalLocalE2E": {
+    "startTime": "2026-10-24T08:29:33.384Z",
+    "duration": 81130.708,
+    "expected": 41,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "visualChecks": [
+    {
+      "repo": "juryflow",
+      "name": "solved/desktop/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 1440,
+        "scrollWidth": 1440
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "solved/mobile320/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 320,
+        "scrollWidth": 320
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "solved/mobile390/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 390,
+        "scrollWidth": 390
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "solved/landscape/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 844,
+        "scrollWidth": 844
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "metadata-rename-retains-12",
+      "pass": true,
+      "details": {
+        "cards": 12,
+        "printEnabled": true,
+        "icsEnabled": true
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "rename-retained/desktop/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 1440,
+        "scrollWidth": 1440
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "rename-retained/mobile320/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 320,
+        "scrollWidth": 320
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "rename-retained/mobile390/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 390,
+        "scrollWidth": 390
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "rename-retained/landscape/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 844,
+        "scrollWidth": 844
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "long-names/desktop/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 1440,
+        "scrollWidth": 1440
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "long-names/mobile320/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 320,
+        "scrollWidth": 320
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "long-names/mobile390/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 390,
+        "scrollWidth": 390
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "long-names/landscape/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 844,
+        "scrollWidth": 844
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "invalid-autosave-blocked/desktop/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 1440,
+        "scrollWidth": 1440
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "invalid-autosave-blocked/mobile320/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 320,
+        "scrollWidth": 320
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "invalid-autosave-blocked/mobile390/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 390,
+        "scrollWidth": 390
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "invalid-autosave-blocked/landscape/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 844,
+        "scrollWidth": 844
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "invalid-date-preserves-last-save",
+      "pass": true
+    },
+    {
+      "repo": "juryflow",
+      "name": "reload-restores-valid-event",
+      "pass": true
+    },
+    {
+      "repo": "juryflow",
+      "name": "reload-last-valid/desktop/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 1440,
+        "scrollWidth": 1440
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "reset-confirm/desktop/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 1440,
+        "scrollWidth": 1440
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "reset-confirm/mobile320/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 320,
+        "scrollWidth": 320
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "reset-confirm/mobile390/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 390,
+        "scrollWidth": 390
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "reset-confirm/landscape/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 844,
+        "scrollWidth": 844
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "confirmation-cancel-focused",
+      "pass": true
+    },
+    {
+      "repo": "juryflow",
+      "name": "no-browser-pageerrors",
+      "pass": true,
+      "details": []
+    },
+    {
+      "repo": "juryflow",
+      "name": "fresh-compact/desktop/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 1440,
+        "scrollWidth": 1440
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "fresh-compact/mobile320/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 320,
+        "scrollWidth": 320
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "fresh-compact/mobile390/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 390,
+        "scrollWidth": 390
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "fresh-compact/landscape/no-page-overflow",
+      "pass": true,
+      "details": {
+        "width": 844,
+        "scrollWidth": 844
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "empty-grid-compact",
+      "pass": true,
+      "details": {
+        "x": 18,
+        "y": 808.65625,
+        "width": 284,
+        "height": 290.984375,
+        "top": 808.65625,
+        "right": 302,
+        "bottom": 1099.640625,
+        "left": 18
+      }
+    },
+    {
+      "repo": "juryflow",
+      "name": "all-five-mobile-nav-visible",
+      "pass": true,
+      "details": [
+        {
+          "text": "Schedule",
+          "rect": {
+            "x": 20,
+            "y": 64,
+            "width": 90,
+            "height": 44,
+            "top": 64,
+            "right": 110,
+            "bottom": 108,
+            "left": 20
+          }
+        },
+        {
+          "text": "Teams\n12",
+          "rect": {
+            "x": 115,
+            "y": 64,
+            "width": 90,
+            "height": 44,
+            "top": 64,
+            "right": 205,
+            "bottom": 108,
+            "left": 115
+          }
+        },
+        {
+          "text": "Judges\n03",
+          "rect": {
+            "x": 210,
+            "y": 64,
+            "width": 90,
+            "height": 44,
+            "top": 64,
+            "right": 300,
+            "bottom": 108,
+            "left": 210
+          }
+        },
+        {
+          "text": "Rooms\n02",
+          "rect": {
+            "x": 20,
+            "y": 113,
+            "width": 90,
+            "height": 44,
+            "top": 113,
+            "right": 110,
+            "bottom": 157,
+            "left": 20
+          }
+        },
+        {
+          "text": "Event setup",
+          "rect": {
+            "x": 115,
+            "y": 113,
+            "width": 90,
+            "height": 44,
+            "top": 113,
+            "right": 205,
+            "bottom": 157,
+            "left": 115
+          }
+        }
+      ]
+    }
+  ],
+  "sharedInteraction": {
+    "baseline": {
+      "passed": 44,
+      "failed": 4,
+      "errors": 0
+    },
+    "firstCandidate": {
+      "passed": 47,
+      "failed": 1,
+      "errors": 0
+    },
+    "finalFocusedCases": 17,
+    "axeScans": 7,
+    "axeViolations": 0
+  },
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 320,
+      "height": 844
+    },
+    {
+      "width": 390,
+      "height": 844
+    },
+    {
+      "width": 844,
+      "height": 390
+    }
+  ],
+  "browser": "Chromium 156.0.8078.4, installed Playwright on Windows",
+  "limits": [
+    "Chromium only",
+    "No physical-device, native browser zoom or human screen-reader speech verification"
+  ],
+  "screenshots": [
+    {
+      "path": "before-metadata.png",
+      "bytes": 124593,
+      "sha256": "93005cbff4ac6ad09be8a5344f8f66aa6c9117b9b8c6c93e2d2f1c323a506a90",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "after-metadata.png",
+      "bytes": 144083,
+      "sha256": "a335a2cb35b73493c5c00364b7d70150413f12ca44514085e32f489431c22f8c",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "before-invalid-draft.png",
+      "bytes": 71272,
+      "sha256": "1d39efe39f8881fd8e62094e861a1237cd9c624d8c603d2e736a19d73e802457",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "before-recovery.png",
+      "bytes": 142651,
+      "sha256": "2937e1bb60b1b6095cc43e40afaaf78998e41bd1e1a96456d73779da54eee68a",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "after-save-warning.png",
+      "bytes": 75544,
+      "sha256": "2b38b8a168e08abaf013ff28643e995733adc4e41e4a8c4d9904d6d4d2edb68a",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "before-reset.png",
+      "bytes": 128654,
+      "sha256": "ebfea6873dd11ff23480d876ff2939a99c23941adf4ad566fe8db0913ee57d7b",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "before-delete.png",
+      "bytes": 87627,
+      "sha256": "74b9a691df1f23ff04abac862c9e45d50a8374a2d48a09ad4a35576433fd2960",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "after-confirm.png",
+      "bytes": 147267,
+      "sha256": "1639ba02565c808ad49418f94054a7ee322d869b19d43359b856142a45331efb",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "before-hidden-focus.png",
+      "bytes": 99958,
+      "sha256": "e77508d9466bef9b568f132a885afde6afa0a34a02279386fb2975e0ee613736",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "before-empty-320.png",
+      "bytes": 96294,
+      "sha256": "cdc1e5ddc1c6af0a08f24892a32bc377e55b684ce40b22ca477fe3c701bbb99f",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "after-empty-320.png",
+      "bytes": 75169,
+      "sha256": "d0202210cdd2493d9d951d33506ecb0fd8731ce7cc47aa371bc5167089c2ede2",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "before-long-320.png",
+      "bytes": 215498,
+      "sha256": "7fd6377682a0917358d1295d80a4e6d2135b030ccf622356941498b9e46c351e",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    },
+    {
+      "path": "after-long-320.png",
+      "bytes": 220110,
+      "sha256": "853647405161803dfcc4c05505c3ede3ea9240960d3edc1172cbdda0ca575633",
+      "method": "Real isolated Playwright Chromium capture on Windows; no generated image"
+    }
+  ],
+  "release": "CI live job and final delivery identify exact source SHA after deploy; candidate screenshots intentionally retain baseline footer until committed build"
+}

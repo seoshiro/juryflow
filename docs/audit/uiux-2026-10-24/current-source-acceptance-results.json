@@ -1,0 +1,97 @@
+{
+  "at": "2026-10-24T08:19:00.446Z",
+  "method": "Pure runtime checks of current transpiled App functions and current compiled IO; no browser or React UI interaction",
+  "hashes": {
+    "src/App.tsx": "99384defd50054ccdb3e5cf73525864d008c057bc70b5fd03095f47dd496056a",
+    "src/io.ts": "87e58beafab56b65ceae3faebffbf038c13abdcd49de6b47c50d67bf0880c282",
+    "src/persistence.ts": "c46002f11b84cd4d84f11ca287adf2a9b3a83c656b8a0ea478a0b3d7aefd938a",
+    "src/useScheduler.ts": "78427c38d83b144723c7a443318cda209808fd831e812e061a9cbb4f6773a55f"
+  },
+  "metadataCalls": [
+    {
+      "line": 1629,
+      "keys": [
+        "judges",
+        "name"
+      ]
+    },
+    {
+      "line": 1653,
+      "keys": [
+        "expertise",
+        "judges"
+      ]
+    },
+    {
+      "line": 1785,
+      "keys": [
+        "name",
+        "rooms"
+      ]
+    },
+    {
+      "line": 1878,
+      "keys": [
+        "name"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "actual App metadata-only call sites are restricted to event/judge/room display text",
+      "status": "PASS"
+    },
+    {
+      "name": "team name retains solved schedule and historical baseline",
+      "status": "PASS"
+    },
+    {
+      "name": "team track retains solved schedule and historical baseline",
+      "status": "PASS"
+    },
+    {
+      "name": "panel size invalidates current schedule and retains immediate previous plan",
+      "status": "PASS"
+    },
+    {
+      "name": "availability invalidates current schedule and retains immediate previous plan",
+      "status": "PASS"
+    },
+    {
+      "name": "required judges invalidates current schedule and retains immediate previous plan",
+      "status": "PASS"
+    },
+    {
+      "name": "excluded judges invalidates current schedule and retains immediate previous plan",
+      "status": "PASS"
+    },
+    {
+      "name": "mixed display and constraint invalidates current schedule and retains immediate previous plan",
+      "status": "PASS"
+    },
+    {
+      "name": "event display rename retains solved schedule via actual updater",
+      "status": "PASS"
+    },
+    {
+      "name": "true event date change invalidates schedule via default updater",
+      "status": "PASS"
+    },
+    {
+      "name": "calendar boundary rejects year10000 rollover with explicit error",
+      "status": "PASS"
+    },
+    {
+      "name": "late year9999 date without rollover exports valid four-digit timestamps",
+      "status": "PASS"
+    },
+    {
+      "name": "actual exportCalendar handler catches overflow and never downloads a partial ICS",
+      "status": "PASS"
+    },
+    {
+      "name": "actual exportCalendar handler still exports normal schedules",
+      "status": "PASS"
+    }
+  ]
+}
