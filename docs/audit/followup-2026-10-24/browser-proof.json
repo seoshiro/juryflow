@@ -1,0 +1,164 @@
+{
+  "before": [
+    {
+      "repo": "juryflow",
+      "check": "modal scroll boundary",
+      "pass": false,
+      "before": 0,
+      "after": 1259,
+      "metrics": {
+        "clientHeight": 812,
+        "scrollHeight": 847,
+        "overscroll": "auto",
+        "inputs": [
+          {
+            "tag": "INPUT",
+            "type": "text",
+            "fontSize": "16px",
+            "label": "Team name",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "SELECT",
+            "type": "select-one",
+            "fontSize": "16px",
+            "label": "Judges per pitch",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Require Alex Morgan",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Conflict with Alex Morgan",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Require Sam Rivera",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Conflict with Sam Rivera",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Require Robin Chen",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Conflict with Robin Chen",
+            "autocomplete": "",
+            "name": ""
+          }
+        ]
+      },
+      "errors": []
+    }
+  ],
+  "after": [
+    {
+      "repo": "juryflow",
+      "check": "modal scroll boundary",
+      "pass": true,
+      "before": 0,
+      "after": 0,
+      "metrics": {
+        "clientHeight": 812,
+        "scrollHeight": 847,
+        "overscroll": "contain",
+        "inputs": [
+          {
+            "tag": "INPUT",
+            "type": "text",
+            "fontSize": "16px",
+            "label": "Team name",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "SELECT",
+            "type": "select-one",
+            "fontSize": "16px",
+            "label": "Judges per pitch",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Require Alex Morgan",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Conflict with Alex Morgan",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Require Sam Rivera",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Conflict with Sam Rivera",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Require Robin Chen",
+            "autocomplete": "",
+            "name": ""
+          },
+          {
+            "tag": "INPUT",
+            "type": "checkbox",
+            "fontSize": "16px",
+            "label": "Conflict with Robin Chen",
+            "autocomplete": "",
+            "name": ""
+          }
+        ]
+      },
+      "errors": []
+    }
+  ]
+}

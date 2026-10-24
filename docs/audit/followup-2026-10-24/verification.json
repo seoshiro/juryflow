@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-24",
+  "repo": "juryflow",
+  "localE2E": {
+    "repo": "juryflow",
+    "exitCode": 0,
+    "stats": {
+      "startTime": "2026-10-24T09:21:19.633Z",
+      "duration": 77345.022,
+      "expected": 43,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "sourceReview": {
+    "errors": 0,
+    "warnings": 0,
+    "suggestions": 285
+  },
+  "sourceUnchangedByCLI": true,
+  "cssByteDelta": 80,
+  "dependencyChange": false,
+  "screenshots": [
+    {
+      "file": "before-modal.png",
+      "sha256": "ef7a093a4a9ef16fd9bfe50d6f3a0dbebd876966d62ea0923bef015c941382d2",
+      "bytes": 74869
+    },
+    {
+      "file": "after-modal.png",
+      "sha256": "9e41b841f7db9689105f90e82ef589d263541906ac4a2f9e9993ead5463e0700",
+      "bytes": 70003
+    }
+  ],
+  "limits": [
+    "Chromium only",
+    "Emulated touch opening and real wheel input; no physical-device claim"
+  ],
+  "release": "Exact SHA, CI and live checks are supplied in final delivery; existing live workflow gates production."
+}

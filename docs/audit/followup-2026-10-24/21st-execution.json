@@ -1,0 +1,91 @@
+{
+  "completedAt": "2026-10-24T09:27:40.971Z",
+  "package": {
+    "name": "@21st-dev/cli",
+    "version": "1.18.0",
+    "integrity": "sha512-rV8X5asUb0Qyvyc2ZD+itxL/u6VgyovuPIVc7wwBrvSNfdsWXxNGcYqfhrA4PMJ+/CqWVhm1jEl5/w36N91JWw=="
+  },
+  "mode": "read-only local; no login/upload/fix; blank token prevents stored-auth read and telemetry",
+  "reviews": [
+    {
+      "repo": "juryflow",
+      "version": "1.18.0",
+      "command": "21st review src --json --token \"\"",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "filesReviewed": 16,
+      "summary": {
+        "errors": 0,
+        "warnings": 0,
+        "suggestions": 285
+      },
+      "findings": 285,
+      "sourceHashes": [
+        {
+          "path": "App.tsx",
+          "sha256": "99384defd50054ccdb3e5cf73525864d008c057bc70b5fd03095f47dd496056a"
+        },
+        {
+          "path": "assignment.ts",
+          "sha256": "0271a30b7b4ecd417219dc746e8791a3206026c3262f6647789d199ed8f19dc1"
+        },
+        {
+          "path": "components/Icon.tsx",
+          "sha256": "4dcfdcc0bad744fde2a618ac6c9c904f7dbe58805848a9f292c6c51663d44a60"
+        },
+        {
+          "path": "components/NumericField.tsx",
+          "sha256": "4e2ce354aea3900ad1fbd0bfe2ba71936b0f5364e2d9c33e4543c646b472ab8f"
+        },
+        {
+          "path": "components/SlotPicker.tsx",
+          "sha256": "253420f4feaaa10be79908b67859f7ce7726e1b8be1a482984e7d28c6bc0fa29"
+        },
+        {
+          "path": "demo.ts",
+          "sha256": "8cfc6e7b73a02631b3c2c59d1299087cde50462fecffa40dc00759a2808951b8"
+        },
+        {
+          "path": "engine/index.ts",
+          "sha256": "2077cf43e98d7f8afa0720a050360fe1ebf72147226ff2dc49b2868a2674e6e6"
+        },
+        {
+          "path": "io.ts",
+          "sha256": "87e58beafab56b65ceae3faebffbf038c13abdcd49de6b47c50d67bf0880c282"
+        },
+        {
+          "path": "issueText.ts",
+          "sha256": "2fcab409873e5b73d183c3aa68676c270cc008f6978a49aa36c5f4148dc7cda0"
+        },
+        {
+          "path": "main.tsx",
+          "sha256": "1bc19ec2f6e0b2f3a0a3febc84b659394812943c83b2364b5e8be91890a00049"
+        },
+        {
+          "path": "persistence.ts",
+          "sha256": "c46002f11b84cd4d84f11ca287adf2a9b3a83c656b8a0ea478a0b3d7aefd938a"
+        },
+        {
+          "path": "refinements.css",
+          "sha256": "dc654f52f34dc281af80462ade47a6624e297eceb41b4e3f9c98ca3f95778927"
+        },
+        {
+          "path": "scheduler.worker.ts",
+          "sha256": "edd2a8bf0da4797c41194704cc9a85b868e479531c2dca5a9809901814da74b6"
+        },
+        {
+          "path": "styles.css",
+          "sha256": "6f138683faccf3dc877ab9b51445bb56b5e36ccd0e63df8a386cf24793b581e4"
+        },
+        {
+          "path": "types.ts",
+          "sha256": "feb7783096f7c9ee6b954b9f6f32047cf586e3e6c0db0fe6cb824cbd41e8cf69"
+        },
+        {
+          "path": "useScheduler.ts",
+          "sha256": "78427c38d83b144723c7a443318cda209808fd831e812e061a9cbb4f6773a55f"
+        }
+      ]
+    }
+  ]
+}
