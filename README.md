@@ -1,16 +1,10 @@
 # JURYFLOW
 
-[Official 21st / Vercel / Emil follow-up and modal repair](docs/audit/FOLLOWUP-2026-10-24.md)
-
-[Design, accessibility and functional audit (24 October 2026)](docs/audit/UIUX-2026-10-24.md)
-
-[Independent deep audit and verified repair (23 October 2026)](docs/audit/QA-2026-10-23.md)
-
 **Every pitch, in place.** A scheduling desk for hackathon pitches and university defenses, built for Beibars / [seoshiro](https://github.com/seoshiro).
 
 Teams, judge panels, rooms, availability, conflicts of interest and locked assignments become one usable schedule. When a judge drops out, compare a repaired plan with the original. All demo identities are synthetic.
 
-**[Open the app](https://seoshiro.github.io/juryflow/)** · [One-minute demo](docs/DEMO.md) · [Original QA](docs/QA.md) · [Audit repair regressions](docs/REPAIR-QA.md)
+**[Open the app](https://seoshiro.github.io/juryflow/)** · [One-minute demo](docs/DEMO.md) · [QA report](docs/QA.md)
 
 ![Actual JURYFLOW schedule](docs/screenshots/schedule-desktop.png)
 
@@ -41,6 +35,30 @@ npm run preview
 The production build is `dist/`. It uses relative asset URLs and works at a GitHub Pages project path. `dist/build.json` identifies the exact source commit; CI supplies `GITHUB_SHA`.
 
 ## Architecture
+
+A static single-page app: all scheduling runs in the browser, so the event data never leaves the organiser's machine.
+
+```mermaid
+flowchart LR
+  UI["React UI<br/>grid, agenda, forms"] -->|edit| Hook["useScheduler<br/>state + persistence"]
+  Hook -->|postMessage| Worker["scheduler.worker<br/>search in background"]
+  Worker --> Engine["engine<br/>pure constraint solver"]
+  Engine -->|plan + diagnostics| Worker
+  Worker -->|result| Hook
+  Hook <-->|versioned JSON| Store[(localStorage)]
+  Hook --> IO["io.ts<br/>JSON / iCalendar export"]
+  Engine -. independent check .-> Validate["validateSchedule"]
+```
+
+### Key decisions
+
+**ADR-1. Custom backtracking solver instead of an LP/CP library.** Events are small (≤ 60 teams, 12 judges, 8 rooms, 32 slots), and the hard constraints map naturally to finite domains. A typed backtracking search with forward checking keeps the bundle small, runs in a Web Worker and is fully deterministic, which makes results reproducible in tests. Trade-off: large, tightly constrained events can return *unknown* instead of a proof; the UI says so explicitly instead of guessing.
+
+**ADR-2. Search in a Web Worker with a hard budget.** Scheduling must never freeze the form the organiser is editing. The worker is cancelled on every edit or stale request, the engine has a 1.8 s / 120,000-node budget and an outer 5 s watchdog covers worker failure. Trade-off: some feasible plans are not found within the budget.
+
+**ADR-3. Local-first storage with a versioned JSON boundary.** No backend, accounts or personal data on a server: the app is free to host on GitHub Pages and safe for real names. Every import and stored document goes through the same validator (`schemaVersion: 1`, size limit, reference checks). Trade-off: no collaboration, and clearing browser storage loses data unless the user exports a backup.
+
+### Modules
 
 - React + TypeScript + Vite. Original responsive CSS, with a room/time grid and a narrow-screen agenda.
 - `src/engine/index.ts` is a pure typed scheduling engine. `validateSchedule` checks complete plans independently of search.
@@ -75,12 +93,8 @@ This is a bounded finite-domain solver, not a commercial optimizer. Larger const
 
 Vitest covers hard constraints, invalid locks, unsatisfiable cases, deterministic output, search limits, document validation and calendar output. Playwright uses an independent constraint oracle on the integrated production build, tests reload, imports, exports, keyboard use and a 390 px viewport, and runs axe accessibility checks. See the checked-in QA report for actual executed results.
 
-The audit repair suite also covers sequential numeric typing, delayed file-read races, native storage quota/recovery, canonical JSON round trips, modal focus return, localized accessible names, worker error dismissal and the 320 px status layout. `npm run test:repair` runs these browser regressions; `npm run test:oracle` repeats the original independent small-event brute-force checks. The [repair report](docs/REPAIR-QA.md) separates reproduced baseline failures from final candidate and live results.
+A browser regression suite also covers sequential numeric typing, delayed file-read races, native storage quota/recovery, canonical JSON round trips, modal focus return, localized accessible names, worker error dismissal and the 320 px status layout. `npm run test:repair` runs these browser regressions; `npm run test:oracle` repeats the original independent small-event brute-force checks.
 
 GitHub Actions runs typecheck, lint, unit tests, production build and Chromium E2E before publishing that same `dist/` artifact to GitHub Pages. Public-repository standard Linux Actions and public Pages are available without a paid plan ([GitHub documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)). No billing settings are changed.
-
-## Implementation workflow
-
-Four actual roles shared an explicit [file contract](CONTRACT.md): integrator, engine worker, UI worker and independent QA worker. Ownership boundaries avoided concurrent edits to the same files. Local `21st-ui-build` / `21st-ui-review` skills guided design and review; a free 21st catalog lookup failed, so no catalog code or paid generation was used. All screenshots are captured from the actual app.
 
 MIT licensed.
